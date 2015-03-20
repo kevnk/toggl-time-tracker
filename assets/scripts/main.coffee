@@ -1,10 +1,10 @@
-targetEarnings = parseFloat(localStorage.getItem('earnings'))
-wage = parseFloat(localStorage.getItem('wage'))
+targetEarnings = parseFloat(localStorage.getItem('earnings'), 10)
+wage = parseFloat(localStorage.getItem('wage'), 10)
 apiKey = localStorage.getItem('apiKey')
 workspaceId = localStorage.getItem('workspaceId')
 userId = localStorage.getItem('userId')
 
-unless _.isNumber(targetEarnings)
+unless _.isNumber(targetEarnings) && targetEarnings > 0
   targetEarnings = parseFloat(prompt('Enter your target earnings'), 10)
   localStorage.setItem('earnings', targetEarnings)
 
