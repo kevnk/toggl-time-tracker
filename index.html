@@ -1,0 +1,78 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="assets/styles/main.css">
+    </head>
+    <body>
+
+        <main class="container">
+            <div class="row">
+                <div class="tab-content">
+                    <div id="target_today" class="fade tab-pane active in">
+                        <div class="display target-today-display"></div>
+                        <div class="display-label">Hours to meet target today</div>
+                    </div>
+                    <div id="clock_out" class="fade tab-pane">
+                        <div class="display clock-out-display"></div>
+                        <div class="display-label">Clock out time to meet target today</div>
+                    </div>
+                    <div id="target_avg" class="fade tab-pane">
+                        <div class="display target-avg-display"></div>
+                        <div class="display-label">Average hours needed to meet EOM target</div>
+                    </div>
+                    <div id="current_avg" class="fade tab-pane">
+                        <div class="display current-avg-display"></div>
+                        <div class="display-label">Current daily average</div>
+                    </div>
+                    <div id="total_hours" class="fade tab-pane">
+                        <div class="display total-hours-display"></div>
+                        <div class="display-label">Total hours logged this month</div>
+                    </div>
+                    <div id="target_hours" class="fade tab-pane">
+                        <div class="display target-hours-display"></div>
+                        <div class="display-label">Total target hours</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <ul class="nav nav-pills">
+                    <li class="active">
+                        <a href="#target_today" data-toggle="tab">Target Today <span class="badge target-today-display"></span></a>
+                    </li>
+                    <li>
+                        <a href="#clock_out" data-toggle="tab">Clock Out <span class="badge clock-out-display"></span></a>
+                    </li>
+                    <li>
+                        <a href="#target_avg" data-toggle="tab">Target AVG <span class="badge target-avg-display"></span></a>
+                    </li>
+                    <li>
+                        <a href="#current_avg" data-toggle="tab">Current AVG <span class="badge current-avg-display"></span></a>
+                    </li>
+                    <li>
+                        <a href="#total_hours" data-toggle="tab">Logged Hours <span class="badge total-hours-display"></span></a>
+                    </li>
+                    <li>
+                        <a href="#target_hours" data-toggle="tab">Target Hours <span class="badge target-hours-display"></span></a>
+                    </li>
+                </ul>
+            </div>
+        </main>
+
+        <script src="bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="bower_components/underscore/underscore.js"></script>
+        <script src="bower_components/moment/moment.js"></script>
+
+        <script src="assets/scripts/extend-moment.js"></script>
+        <script src="assets/scripts/main.js"></script>
+
+        <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
+    </body>
+</html>
