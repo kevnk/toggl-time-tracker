@@ -2,9 +2,9 @@
 (function() {
   var Site, apiKey, targetEarnings, targetHrs, userId, wage, workspaceId;
 
-  targetEarnings = parseFloat(localStorage.getItem('earnings'));
+  targetEarnings = parseFloat(localStorage.getItem('earnings'), 10);
 
-  wage = parseFloat(localStorage.getItem('wage'));
+  wage = parseFloat(localStorage.getItem('wage'), 10);
 
   apiKey = localStorage.getItem('apiKey');
 
@@ -12,7 +12,7 @@
 
   userId = localStorage.getItem('userId');
 
-  if (!_.isNumber(targetEarnings)) {
+  if (!(_.isNumber(targetEarnings) && targetEarnings > 0)) {
     targetEarnings = parseFloat(prompt('Enter your target earnings'), 10);
     localStorage.setItem('earnings', targetEarnings);
   }

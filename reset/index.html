@@ -15,7 +15,8 @@
     <body>
         <script>
           localStorage.clear();
-          window.location.href = '/toggl-time-tracker/'
+          redirectUrl = location.host == 'localhost' ? '_repos/kevnk/toggl-time-tracker/' : '/toggl-time-tracker/';
+          window.location.href = redirectUrl;
         </script>
     </body>
 </html>
