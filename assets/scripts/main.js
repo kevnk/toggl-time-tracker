@@ -106,6 +106,7 @@
       $targetHrs = $('.target-hours-display');
       $targetToday = $('.target-today-display');
       $clockOut = $('.clock-out-display');
+      todaysHours = Math.round(this.summary.total_grand / 1000 / 60 / 60 * 10) / 10;
       totalHours = Math.round(this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
       $total.html(totalHours);
       today = moment().hour(0);
@@ -115,10 +116,9 @@
       $current.html(currentAvg);
       eom = moment().date(today.daysInMonth());
       daysLeft = today.weekDays(eom) + 1;
-      targetAvg = Math.round((this.targetHrs - totalHours) / daysLeft * 10) / 10;
+      targetAvg = Math.round((this.targetHrs - totalHours + todaysHours) / daysLeft * 10) / 10;
       $target.html(targetAvg);
       $targetHrs.html(this.targetHrs);
-      todaysHours = Math.round(this.summary.total_grand / 1000 / 60 / 60 * 10) / 10;
       targetToday = Math.round((targetAvg - todaysHours) * 10) / 10;
       $targetToday.html(targetToday);
       eod = moment().add(targetToday, 'h').format('h:mma');

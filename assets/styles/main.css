@@ -27,11 +27,18 @@ html, body {
   .tab-content .display-label {
     opacity: 0.3;
     font-size: 4vw; }
+    .tab-content .display-label small {
+      display: block;
+      font-size: 0.6em; }
   @media (max-width: 400px) {
     .tab-content .display {
       font-size: 22vw; }
     .tab-content .display-label {
       font-size: 6vw; } }
+  @media (max-width: 760px) {
+    .tab-content .display-label small {
+      display: inline;
+      font-size: 1em; } }
 
 .nav {
   text-align: center; }

@@ -88,6 +88,7 @@ Site =
     $clockOut = $('.clock-out-display')
 
     # TOTAL
+    todaysHours = Math.round(@summary.total_grand / 1000 / 60 / 60 * 10) / 10
     totalHours = Math.round(@details.total_grand / 1000 / 60 / 60 * 10) / 10
     $total.html totalHours
 
@@ -100,15 +101,14 @@ Site =
 
     # TARGET AVG
     eom = moment().date today.daysInMonth()
-    daysLeft = today.weekDays(eom) + 1 #Add today
-    targetAvg = Math.round((@targetHrs - totalHours) / daysLeft * 10) / 10
+    daysLeft = today.weekDays(eom) + 1
+    targetAvg = Math.round((@targetHrs - totalHours + todaysHours) / daysLeft * 10) / 10
     $target.html targetAvg
 
     # TARGET HOURS
     $targetHrs.html @targetHrs
 
     # TARGET TODAY
-    todaysHours = Math.round(@summary.total_grand / 1000 / 60 / 60 * 10) / 10
     targetToday = Math.round((targetAvg - todaysHours) * 10) / 10
     $targetToday.html targetToday
 

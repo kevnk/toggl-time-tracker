@@ -29,12 +29,20 @@ html, body
   .display-label
     opacity: 0.3
     font-size: 4vw
+    small
+      display: block
+      font-size: .6em
 
   @media (max-width: 400px)
     .display
       font-size: 22vw
     .display-label
       font-size: 6vw
+  @media (max-width: 760px)
+    .display-label
+      small
+        display: inline
+        font-size: 1em
 
 .nav
   text-align: center
