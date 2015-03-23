@@ -64,8 +64,12 @@ Site =
         success: (data) =>
           @summary = data
       })
-    ).done =>
+    ).done( =>
       @displayData()
+    ).fail( =>
+      $('.loading').removeClass('loading').addClass('error').html '<h1><span class="label label-danger">Error! Wrong credentials!</span></h1>
+        <a class="btn btn-default" href="reset/">Try reseting your variables</a>'
+    )
 
   displayData: ->
     $total = $('.total-hours-display')
@@ -104,6 +108,9 @@ Site =
     eod = moment().add(targetToday, 'h').format('h:mma')
     $clockOut.html eod
 
+    # Show Stuff
+    $('.loading').fadeOut ->
+      $('.row.fade').addClass('in')
 
 
 Site.init()

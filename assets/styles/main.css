@@ -1,6 +1,12 @@
 html, body {
   background: #fafafa; }
 
+.error {
+  padding: 50px 15px;
+  text-align: center; }
+  .error .btn {
+    margin: 15px; }
+
 .tab-content {
   text-align: center;
   padding: 50px 15px 60px; }
@@ -21,5 +27,3 @@ html, body {
     display: inline-block;
     margin: 5px;
     float: none; }
-
-/*# sourceMappingURL=main.css.map */

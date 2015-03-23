@@ -84,6 +84,10 @@
         return function() {
           return _this.displayData();
         };
+      })(this)).fail((function(_this) {
+        return function() {
+          return $('.loading').removeClass('loading').addClass('error').html('<h1><span class="label label-danger">Error! Wrong credentials!</span></h1> <a class="btn btn-default" href="reset/">Try reseting your variables</a>');
+        };
       })(this));
     },
     displayData: function() {
@@ -110,7 +114,10 @@
       targetToday = Math.round((targetAvg - todaysHours) * 10) / 10;
       $targetToday.html(targetToday);
       eod = moment().add(targetToday, 'h').format('h:mma');
-      return $clockOut.html(eod);
+      $clockOut.html(eod);
+      return $('.loading').fadeOut(function() {
+        return $('.row.fade').addClass('in');
+      });
     }
   };
 
