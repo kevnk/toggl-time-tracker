@@ -96,13 +96,13 @@
       $clockOut = $('.clock-out-display');
       totalHours = Math.round(this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
       $total.html(totalHours);
-      today = moment().hour(23);
+      today = moment().hour(0);
       bom = moment().date(1);
       daysWorked = today.weekDays(bom);
       currentAvg = Math.round(totalHours / daysWorked * 10) / 10;
       $current.html(currentAvg);
       eom = moment().date(today.daysInMonth());
-      daysLeft = today.weekDays(eom);
+      daysLeft = today.weekDays(eom) + 1;
       targetAvg = Math.round((targetHrs - totalHours) / daysLeft * 10) / 10;
       $target.html(targetAvg);
       $targetHrs.html(targetHrs);

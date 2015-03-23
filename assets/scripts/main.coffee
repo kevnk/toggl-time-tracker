@@ -80,7 +80,7 @@ Site =
     $total.html totalHours
 
     # CURRENT / yesterday's avg
-    today = moment().hour(23)
+    today = moment().hour(0)
     bom = moment().date(1)
     daysWorked = today.weekDays(bom)
     currentAvg = Math.round(totalHours / daysWorked * 10) / 10
@@ -88,7 +88,7 @@ Site =
 
     # TARGET AVG
     eom = moment().date today.daysInMonth()
-    daysLeft = today.weekDays(eom)
+    daysLeft = today.weekDays(eom) + 1 #Add today
     targetAvg = Math.round((targetHrs - totalHours) / daysLeft * 10) / 10
     $target.html targetAvg
 
