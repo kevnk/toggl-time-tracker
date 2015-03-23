@@ -99,12 +99,13 @@
       })(this));
     },
     displayData: function() {
-      var $clockOut, $current, $target, $targetHrs, $targetToday, $total, bom, currentAvg, daysLeft, daysWorked, eod, eom, targetAvg, targetToday, today, todaysHours, totalHours;
+      var $clockOut, $current, $target, $targetAvgToday, $targetHrs, $targetToday, $total, bom, currentAvg, daysLeft, daysLeftToday, daysWorked, eod, eom, targetAvg, targetAvgToday, targetToday, today, todaysHours, totalHours;
       $total = $('.total-hours-display');
       $current = $('.current-avg-display');
       $target = $('.target-avg-display');
       $targetHrs = $('.target-hours-display');
       $targetToday = $('.target-today-display');
+      $targetAvgToday = $('.target-avg-today-display');
       $clockOut = $('.clock-out-display');
       todaysHours = Math.round(this.summary.total_grand / 1000 / 60 / 60 * 10) / 10;
       totalHours = Math.round(this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
@@ -114,12 +115,15 @@
       daysWorked = today.weekDays(bom);
       currentAvg = Math.round(totalHours / daysWorked * 10) / 10;
       $current.html(currentAvg);
-      eom = moment().date(today.daysInMonth());
-      daysLeft = today.weekDays(eom) + 1;
-      targetAvg = Math.round((this.targetHrs - totalHours + todaysHours) / daysLeft * 10) / 10;
-      $target.html(targetAvg);
       $targetHrs.html(this.targetHrs);
-      targetToday = Math.round((targetAvg - todaysHours) * 10) / 10;
+      eom = moment().date(today.daysInMonth());
+      daysLeft = today.weekDays(eom);
+      targetAvg = Math.round((this.targetHrs - totalHours) / daysLeft * 10) / 10;
+      $target.html(targetAvg);
+      daysLeftToday = daysLeft + 1;
+      targetAvgToday = Math.round((this.targetHrs - totalHours + todaysHours) / daysLeftToday * 10) / 10;
+      $targetAvgToday.html(targetAvgToday);
+      targetToday = Math.round((targetAvgToday - todaysHours) * 10) / 10;
       $targetToday.html(targetToday);
       eod = moment().add(targetToday, 'h').format('h:mma');
       $clockOut.html(eod);

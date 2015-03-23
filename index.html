@@ -63,9 +63,13 @@
                                     <div class="display clock-out-display"></div>
                                     <div class="display-label">Clock out time <small>(now + hours to meet target today)</small></div>
                                 </div>
+                                <div id="target_avg_today" class="fade tab-pane">
+                                    <div class="display target-avg-today-display"></div>
+                                    <div class="display-label">Today's target to make earnings by EOM</div>
+                                </div>
                                 <div id="target_avg" class="fade tab-pane">
                                     <div class="display target-avg-display"></div>
-                                    <div class="display-label">Average hours/day to hit target earnings by end of month</div>
+                                    <div class="display-label">Tomorrow's target to make earnings by EOM <small>(If you logged no more time today)</small></div>
                                 </div>
                                 <div id="current_avg" class="fade tab-pane">
                                     <div class="display current-avg-display"></div>
@@ -90,7 +94,10 @@
                                     <a href="#clock_out" data-toggle="tab">Clock Out <span class="badge clock-out-display"></span></a>
                                 </li>
                                 <li>
-                                    <a href="#target_avg" data-toggle="tab">Target AVG <span class="badge target-avg-display"></span></a>
+                                    <a href="#target_avg_today" data-toggle="tab">Target Today <span class="badge target-avg-today-display"></span></a>
+                                </li>
+                                <li>
+                                    <a href="#target_avg" data-toggle="tab">Target Tomorrow <span class="badge target-avg-display"></span></a>
                                 </li>
                                 <li>
                                     <a href="#current_avg" data-toggle="tab">Current AVG <span class="badge current-avg-display"></span></a>

@@ -85,6 +85,7 @@ Site =
     $target = $('.target-avg-display')
     $targetHrs = $('.target-hours-display')
     $targetToday = $('.target-today-display')
+    $targetAvgToday = $('.target-avg-today-display')
     $clockOut = $('.clock-out-display')
 
     # TOTAL
@@ -99,17 +100,22 @@ Site =
     currentAvg = Math.round(totalHours / daysWorked * 10) / 10
     $current.html currentAvg
 
-    # TARGET AVG
-    eom = moment().date today.daysInMonth()
-    daysLeft = today.weekDays(eom) + 1
-    targetAvg = Math.round((@targetHrs - totalHours + todaysHours) / daysLeft * 10) / 10
-    $target.html targetAvg
-
     # TARGET HOURS
     $targetHrs.html @targetHrs
 
+    # TARGET AVG TOMOROW
+    eom = moment().date today.daysInMonth()
+    daysLeft = today.weekDays(eom)
+    targetAvg = Math.round((@targetHrs - totalHours) / daysLeft * 10) / 10
+    $target.html targetAvg
+
+    # TARGET AVG TODAY
+    daysLeftToday = daysLeft + 1
+    targetAvgToday = Math.round((@targetHrs - totalHours + todaysHours) / daysLeftToday * 10) / 10
+    $targetAvgToday.html targetAvgToday
+
     # TARGET TODAY
-    targetToday = Math.round((targetAvg - todaysHours) * 10) / 10
+    targetToday = Math.round((targetAvgToday - todaysHours) * 10) / 10
     $targetToday.html targetToday
 
     # CLOCK OUT
