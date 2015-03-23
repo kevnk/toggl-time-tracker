@@ -13,7 +13,7 @@ unless _.isNumber(wage) && wage > 0
   localStorage.setItem('wage', wage)
 
 if _.isNull(apiKey)
-  apiKey = prompt('Enter your toggl api key') + ''
+  apiKey = prompt('Enter your toggl auth token') + ''
   localStorage.setItem('apiKey', apiKey)
 
 if _.isNull(workspaceId)
