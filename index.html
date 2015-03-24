@@ -23,7 +23,10 @@
                 <div class="menu-wrap">
                     <div class="menu">
                         <form>
-                            <button type="submit" class="btn btn-sm btn-primary pull-right">Save</button>
+                            <div class="button-wrap">
+                                <button class="btn btn-link">Copy Share Url</button>
+                                <button type="submit" class="btn btn-sm btn-primary pull-right">Save</button>
+                            </div>
                             <div class="form-group">
                                 <label for="earnings">Total Earnings</label>
                                 <input type="number" class="form-control" id="earnings" placeholder="Total Earnings">
@@ -53,6 +56,9 @@
 
                 <div class="content-wrap">
                     <div class="content">
+                        <div class="row msg-wrap">
+                            <div id="msg" class="btn btn-success btn-lg fade">Hi! I'm a message box</div>
+                        </div>
                         <div class="row fade">
                             <div class="tab-content">
                                 <div id="target_today" class="fade tab-pane active in">
@@ -119,6 +125,7 @@
         <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
         <script src="bower_components/underscore/underscore.js"></script>
         <script src="bower_components/moment/moment.js"></script>
+        <script src="bower_components/zeroclipboard/dist/ZeroClipboard.min.js"></script>
 
         <script src="assets/scripts/extend-moment.js"></script>
         <script src="assets/vendor/classie.js"></script>

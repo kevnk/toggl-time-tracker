@@ -2,6 +2,8 @@ html, body
   background: #fafafa
 
 .error
+  position: relative
+  z-index: 999
   padding: 50px 15px
   text-align: center
   .btn
@@ -21,9 +23,16 @@ html, body
   &:focus
     outline: 0
 
+.msg-wrap
+  text-align: center
+  #msg
+    display: inline-block
+    margin: 10px auto
+
+
 .tab-content
   text-align: center
-  padding: 50px 15px 60px
+  padding: 30px 15px 60px
   .display
     font-size: 16vw
   .display-label
@@ -73,7 +82,7 @@ html, body
 .menu
   margin: 50px 15px 20px 15px
   text-align: left
-  button
+  .button-wrap
     position: absolute
     top: 15px
     right: 15px
@@ -84,3 +93,4 @@ html, body
   height: 430px
   @media (max-width: 300px)
     width: 200px
+

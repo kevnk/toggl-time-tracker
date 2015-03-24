@@ -1,34 +1,13 @@
-targetEarnings = parseFloat(localStorage.getItem('earnings'), 10)
-wage = parseFloat(localStorage.getItem('wage'), 10)
-apiKey = localStorage.getItem('apiKey')
-workspaceId = localStorage.getItem('workspaceId')
-userId = localStorage.getItem('userId')
-
-unless _.isNumber(targetEarnings) && targetEarnings > 0
-  targetEarnings = parseFloat(prompt('Enter your target earnings'), 10)
-  localStorage.setItem('earnings', targetEarnings)
-
-unless _.isNumber(wage) && wage > 0
-  wage = parseFloat(prompt('Enter your hourly wage'), 10)
-  localStorage.setItem('wage', wage)
-
-if _.isNull(apiKey)
-  apiKey = prompt('Enter your toggl auth token') + ''
-  localStorage.setItem('apiKey', apiKey)
-
-if _.isNull(workspaceId)
-  workspaceId = prompt('Enter your toggl workspaceId') + ''
-  localStorage.setItem('workspaceId', workspaceId)
-
-if _.isNull(userId)
-  userId = prompt('Enter your toggl userId') + ''
-  localStorage.setItem('userId', userId)
-
-
 Site =
   init: () ->
-    @setLocalData()
+    @setLocalData(false)
+
+    # Redirect without the query params if they existed
+    if location.search
+      document.location = location.origin + location.pathname
+
     @displaySettings()
+    @attachCopyLink()
 
     qSince = moment().date(1).format('YYYY-MM-DD')
     qUntil = moment().date(moment().daysInMonth()).format('YYYY-MM-DD')
@@ -39,12 +18,34 @@ Site =
 
     @getData()
 
-  setLocalData: ->
-    @targetEarnings = localStorage.getItem('earnings')
-    @wage = localStorage.getItem('wage')
-    @userId = localStorage.getItem('userId')
-    @workspaceId = localStorage.getItem('workspaceId')
-    @apiKey = localStorage.getItem('apiKey')
+  setLocalData: (ignoreQueryParams=true) ->
+    @targetEarnings = unless ignoreQueryParams then @getParameterByName('e') or localStorage.getItem('earnings') else localStorage.getItem('earnings')
+    @wage = unless ignoreQueryParams then @getParameterByName('w') or localStorage.getItem('wage') else localStorage.getItem('wage')
+    @userId = unless ignoreQueryParams then @getParameterByName('u') or localStorage.getItem('userId') else localStorage.getItem('userId')
+    @workspaceId = unless ignoreQueryParams then @getParameterByName('s') or localStorage.getItem('workspaceId') else localStorage.getItem('workspaceId')
+    @apiKey = unless ignoreQueryParams then @getParameterByName('a') or localStorage.getItem('apiKey') else localStorage.getItem('apiKey')
+
+    unless @targetEarnings > 0
+      @targetEarnings = parseFloat(prompt('Enter your target earnings'), 10)
+
+    unless @wage > 0
+      @wage = parseFloat(prompt('Enter your hourly wage'), 10)
+
+    if _.isNull(@apiKey)
+      @apiKey = prompt('Enter your toggl auth token') + ''
+
+    if _.isNull(@workspaceId)
+      @workspaceId = prompt('Enter your toggl workspaceId') + ''
+
+    if _.isNull(@userId)
+      @userId = prompt('Enter your toggl userId') + ''
+
+    localStorage.setItem('earnings', @targetEarnings)
+    localStorage.setItem('wage', @wage)
+    localStorage.setItem('userId', @userId)
+    localStorage.setItem('workspaceId', @workspaceId)
+    localStorage.setItem('apiKey', @apiKey)
+
     @targetHrs = @targetEarnings / @wage
 
   getData: ->
@@ -52,8 +53,8 @@ Site =
     $.when(
       $.ajax({
         url: @detailsUrl
-        beforeSend: (xhr) ->
-          xhr.setRequestHeader 'Authorization', 'Basic ' + apiKey
+        beforeSend: (xhr) =>
+          xhr.setRequestHeader 'Authorization', 'Basic ' + @apiKey
           xhr.setRequestHeader 'X-Requested-With', 'XMLHttpRequest'
         type: 'GET'
         dataType: 'json'
@@ -63,8 +64,8 @@ Site =
       }),
       $.ajax({
         url: @summaryUrl
-        beforeSend: (xhr) ->
-          xhr.setRequestHeader 'Authorization', 'Basic ' + apiKey
+        beforeSend: (xhr) =>
+          xhr.setRequestHeader 'Authorization', 'Basic ' + @apiKey
           xhr.setRequestHeader 'X-Requested-With', 'XMLHttpRequest'
         type: 'GET'
         dataType: 'json'
@@ -152,6 +153,41 @@ Site =
       @displayData()
 
       return false
+
+  attachCopyLink: ->
+    $btn = $('.menu .btn-link')
+    btn = new ZeroClipboard( $btn.get(0) )
+
+    $btn.on 'mousedown', =>
+      url = location.href
+      url += '?e=' + @targetEarnings
+      url += '&w=' + @wage
+      url += '&u=' + @userId
+      url += '&s=' + @workspaceId
+      url += '&a=' + @apiKey
+      $btn.attr('data-clipboard-text', url)
+
+    btn.on 'ready', ->
+      btn.on 'afterCopy', (event) ->
+        msgs = [
+          'Hip hip hooray!'
+          'Woohoo!'
+          'Fantabalistic!'
+          'Ain\'t that special?!'
+          '(successkid)!'
+          '(rockon)!'
+          '...like a boss!'
+        ]
+        $('#msg').html('Copied! ' + _.sample(msgs)).addClass('in')
+        setTimeout ->
+          $('#msg').removeClass('in')
+        , 2000
+
+  getParameterByName: (name) ->
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
+    regex = new RegExp("[\\?&]" + name + "=([^&#]*)")
+    results = regex.exec(location.search)
+    if results is null then '' else decodeURIComponent(results[1].replace(/\+/g, " "))
 
 
 
