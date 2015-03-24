@@ -18,11 +18,7 @@
       this.detailsUrl = 'https://toggl.com/reports/api/v2/details?rounding=Off&status=active&user_ids=' + this.userId + '&name=&billable=both&calculate=time&sortDirection=asc&sortBy=date&page=1&description=&since=' + qSince + '&until=' + qUntil + '&workspace_id=' + this.workspaceId + '&period=thisMonth&with_total_currencies=1&grouping=&subgrouping=time_entries&order_field=date&order_desc=off&distinct_rates=Off&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token=';
       this.summaryUrl = 'https://toggl.com/reports/api/v2/summary.json?grouping=projects&subgrouping=time_entries&order_field=title&order_desc=off&rounding=Off&distinct_rates=Off&status=active&user_ids=' + this.userId + '&name=&billable=both&workspace_id=' + this.workspaceId + '&calculate=time&sortDirection=asc&sortBy=title&page=1&description=&since=' + qToday + '&until=' + qToday + '&period=today&with_total_currencies=1&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token=';
       this.getData();
-      return setInterval((function(_this) {
-        return function() {
-          return _this.getData();
-        };
-      })(this), 15 * 60 * 1000);
+      return this.attachAutoRefresh;
     },
     setLocalData: function(ignoreQueryParams) {
       if (ignoreQueryParams == null) {
@@ -187,6 +183,26 @@
           }, 2000);
         });
       });
+    },
+    attachAutoRefresh: function() {
+      this.autoUpdate = 0;
+      this.autoTimer = moment();
+      return $(window).on('blur', (function(_this) {
+        return function() {
+          clearInterval(_this.autoUpdate);
+          return _this.autoUpdate = setInterval(function() {
+            return _this.getData();
+          }, 5 * 60 * 1000);
+        };
+      })(this)).on('focus', (function(_this) {
+        return function() {
+          clearInterval(_this.autoUpdate);
+          if (moment().diff(_this.autoTimer) > 5 * 60 * 1000) {
+            _this.autoTimer = moment();
+            return _this.getData();
+          }
+        };
+      })(this));
     },
     getParameterByName: function(name) {
       var regex, results;
