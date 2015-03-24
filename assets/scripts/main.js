@@ -9,6 +9,7 @@
       if (location.search) {
         document.location = location.origin + location.pathname;
       }
+      this.documentTitle = document.title;
       this.displaySettings();
       this.attachCopyLink();
       qSince = moment().date(1).format('YYYY-MM-DD');
@@ -16,7 +17,12 @@
       qToday = moment().format('YYYY-MM-DD');
       this.detailsUrl = 'https://toggl.com/reports/api/v2/details?rounding=Off&status=active&user_ids=' + this.userId + '&name=&billable=both&calculate=time&sortDirection=asc&sortBy=date&page=1&description=&since=' + qSince + '&until=' + qUntil + '&workspace_id=' + this.workspaceId + '&period=thisMonth&with_total_currencies=1&grouping=&subgrouping=time_entries&order_field=date&order_desc=off&distinct_rates=Off&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token=';
       this.summaryUrl = 'https://toggl.com/reports/api/v2/summary.json?grouping=projects&subgrouping=time_entries&order_field=title&order_desc=off&rounding=Off&distinct_rates=Off&status=active&user_ids=' + this.userId + '&name=&billable=both&workspace_id=' + this.workspaceId + '&calculate=time&sortDirection=asc&sortBy=title&page=1&description=&since=' + qToday + '&until=' + qToday + '&period=today&with_total_currencies=1&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token=';
-      return this.getData();
+      this.getData();
+      return setInterval((function(_this) {
+        return function() {
+          return _this.getData();
+        };
+      })(this), 15 * 60 * 1000);
     },
     setLocalData: function(ignoreQueryParams) {
       if (ignoreQueryParams == null) {
@@ -52,6 +58,8 @@
     getData: function() {
       var that;
       that = this;
+      $('.loading').fadeIn('fast');
+      $('.row.fade.in').removeClass('in');
       return $.when($.ajax({
         url: this.detailsUrl,
         beforeSend: (function(_this) {
@@ -123,8 +131,9 @@
       $targetToday.html(targetToday);
       eod = moment().add(targetToday, 'h').format('h:mma');
       $clockOut.html(eod);
+      document.title = '(' + targetToday + ') ' + this.documentTitle;
       $('body').removeClass('show-menu');
-      return $('.loading').fadeOut(function() {
+      return $('.loading').stop().fadeOut(function() {
         return $('.row.fade').addClass('in');
       });
     },

@@ -6,6 +6,7 @@ Site =
     if location.search
       document.location = location.origin + location.pathname
 
+    @documentTitle = document.title
     @displaySettings()
     @attachCopyLink()
 
@@ -17,6 +18,11 @@ Site =
     @summaryUrl = 'https://toggl.com/reports/api/v2/summary.json?grouping=projects&subgrouping=time_entries&order_field=title&order_desc=off&rounding=Off&distinct_rates=Off&status=active&user_ids=' + @userId + '&name=&billable=both&workspace_id=' + @workspaceId + '&calculate=time&sortDirection=asc&sortBy=title&page=1&description=&since=' + qToday + '&until=' + qToday + '&period=today&with_total_currencies=1&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token='
 
     @getData()
+
+    # Update every 15 minutes
+    setInterval =>
+      @getData()
+    , 15 * 60 * 1000
 
   setLocalData: (ignoreQueryParams=true) ->
     @targetEarnings = unless ignoreQueryParams then @getParameterByName('e') or localStorage.getItem('earnings') else localStorage.getItem('earnings')
@@ -50,6 +56,8 @@ Site =
 
   getData: ->
     that = this
+    $('.loading').fadeIn('fast')
+    $('.row.fade.in').removeClass('in')
     $.when(
       $.ajax({
         url: @detailsUrl
@@ -124,8 +132,9 @@ Site =
     $clockOut.html eod
 
     # Show Stuff
+    document.title = '(' + targetToday + ') ' + @documentTitle
     $('body').removeClass('show-menu')
-    $('.loading').fadeOut ->
+    $('.loading').stop().fadeOut ->
       $('.row.fade').addClass('in')
 
 
