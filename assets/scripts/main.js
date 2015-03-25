@@ -193,12 +193,12 @@
           clearInterval(_this.autoUpdate);
           return _this.autoUpdate = setInterval(function() {
             return _this.getData();
-          }, 5 * 60 * 1000);
+          }, 2 * 60 * 1000);
         };
       })(this)).on('focus', (function(_this) {
         return function() {
           clearInterval(_this.autoUpdate);
-          if (moment().diff(_this.autoTimer) > 5 * 60 * 1000) {
+          if (moment().diff(_this.autoTimer) > 2 * 60 * 1000) {
             _this.autoTimer = moment();
             return _this.getData();
           }

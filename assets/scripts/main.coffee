@@ -193,17 +193,17 @@ Site =
     @autoUpdate = 0
     @autoTimer = moment()
 
-    # Update every 5 minutes
+    # Update every 2 minutes
     $(window).on 'blur', =>
       clearInterval @autoUpdate
       @autoUpdate = setInterval =>
         @getData()
-      , 5 * 60 * 1000
+      , 2 * 60 * 1000
 
-    # If idle for more than 5 minutes, refresh on focus
+    # If idle for more than 2 minutes, refresh on focus
     .on 'focus', =>
       clearInterval @autoUpdate
-      if moment().diff(@autoTimer) > 5 * 60 * 1000
+      if moment().diff(@autoTimer) > 2 * 60 * 1000
         @autoTimer = moment()
         @getData()
 
