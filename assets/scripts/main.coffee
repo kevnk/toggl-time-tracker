@@ -6,7 +6,7 @@ Site =
     if location.search
       document.location = location.origin + location.pathname
 
-    @documentTitle = document.title
+    @setupVariables()
     @displaySettings()
     @attachCopyLink()
 
@@ -20,6 +20,7 @@ Site =
     @attachAutoRefresh()
 
     return this
+
 
   setLocalData: (ignoreQueryParams=true) ->
     @targetEarnings = unless ignoreQueryParams then @getParameterByName('e') or localStorage.getItem('earnings') else localStorage.getItem('earnings')
@@ -50,6 +51,19 @@ Site =
     localStorage.setItem('apiKey', @apiKey)
 
     @targetHrs = @targetEarnings / @wage
+
+
+  setupVariables: ->
+    @documentTitle = document.title
+
+    @today = moment().hour(0).minute(0).second(0)
+    @bom = moment().hour(0).minute(0).second(0).date(1)
+    @eom = moment().hour(0).minute(0).second(0).date( @today.daysInMonth() )
+    @workDays = @bom.weekDays( @eom )
+    @workDaysWorked = @today.weekDays( @bom )
+    @workDaysLeftToday = @workDays - @workDaysWorked
+    @workDaysLeft = if @today.isWeekDay() then @workDaysLeftToday - 1 else @workDaysLeftToday
+
 
   getData: ->
     that = this
@@ -85,6 +99,7 @@ Site =
         <a class="btn btn-default" href="reset/">Try reseting your variables</a>'
     )
 
+
   displayData: ->
     $total = $('.total-hours-display')
     $current = $('.current-avg-display')
@@ -100,24 +115,18 @@ Site =
     $total.html totalHours
 
     # CURRENT / yesterday's avg
-    today = moment().hour(0)
-    bom = moment().date(1)
-    daysWorked = today.weekDays(bom)
-    currentAvg = Math.round(totalHours / daysWorked * 10) / 10
+    currentAvg = Math.round(totalHours / @workDaysWorked * 10) / 10
     $current.html currentAvg
 
     # TARGET HOURS
     $targetHrs.html @targetHrs
 
     # TARGET AVG TOMOROW
-    eom = moment().date today.daysInMonth()
-    daysLeft = today.weekDays(eom)
-    targetAvg = Math.round((@targetHrs - totalHours) / daysLeft * 10) / 10
+    targetAvg = Math.round((@targetHrs - totalHours) / @workDaysLeft * 10) / 10
     $target.html targetAvg
 
     # TARGET AVG TODAY
-    daysLeftToday = daysLeft + 1
-    targetAvgToday = Math.round((@targetHrs - totalHours + todaysHours) / daysLeftToday * 10) / 10
+    targetAvgToday = Math.round((@targetHrs - totalHours + todaysHours) / @workDaysLeftToday * 10) / 10
     $targetAvgToday.html targetAvgToday
 
     # TARGET TODAY
@@ -160,6 +169,7 @@ Site =
 
       return false
 
+
   attachCopyLink: ->
     $btn = $('.menu .btn-link')
     btn = new ZeroClipboard( $btn.get(0) )
@@ -189,6 +199,7 @@ Site =
           $('#msg').removeClass('in')
         , 2000
 
+
   attachAutoRefresh: ->
     @autoUpdate = 0
     @autoTimer = moment()
@@ -206,6 +217,7 @@ Site =
       if moment().diff(@autoTimer) > 2 * 60 * 1000
         @autoTimer = moment()
         @getData()
+
 
   getParameterByName: (name) ->
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")

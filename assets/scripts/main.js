@@ -9,7 +9,7 @@
       if (location.search) {
         document.location = location.origin + location.pathname;
       }
-      this.documentTitle = document.title;
+      this.setupVariables();
       this.displaySettings();
       this.attachCopyLink();
       qSince = moment().date(1).format('YYYY-MM-DD');
@@ -51,6 +51,16 @@
       localStorage.setItem('workspaceId', this.workspaceId);
       localStorage.setItem('apiKey', this.apiKey);
       return this.targetHrs = this.targetEarnings / this.wage;
+    },
+    setupVariables: function() {
+      this.documentTitle = document.title;
+      this.today = moment().hour(0).minute(0).second(0);
+      this.bom = moment().hour(0).minute(0).second(0).date(1);
+      this.eom = moment().hour(0).minute(0).second(0).date(this.today.daysInMonth());
+      this.workDays = this.bom.weekDays(this.eom);
+      this.workDaysWorked = this.today.weekDays(this.bom);
+      this.workDaysLeftToday = this.workDays - this.workDaysWorked;
+      return this.workDaysLeft = this.today.isWeekDay() ? this.workDaysLeftToday - 1 : this.workDaysLeftToday;
     },
     getData: function() {
       var that;
@@ -100,7 +110,7 @@
       })(this));
     },
     displayData: function() {
-      var $clockOut, $current, $target, $targetAvgToday, $targetHrs, $targetToday, $total, bom, currentAvg, daysLeft, daysLeftToday, daysWorked, eod, eom, targetAvg, targetAvgToday, targetToday, today, todaysHours, totalHours;
+      var $clockOut, $current, $target, $targetAvgToday, $targetHrs, $targetToday, $total, currentAvg, eod, targetAvg, targetAvgToday, targetToday, todaysHours, totalHours;
       $total = $('.total-hours-display');
       $current = $('.current-avg-display');
       $target = $('.target-avg-display');
@@ -111,18 +121,12 @@
       todaysHours = Math.round(this.summary.total_grand / 1000 / 60 / 60 * 10) / 10;
       totalHours = Math.round(this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
       $total.html(totalHours);
-      today = moment().hour(0);
-      bom = moment().date(1);
-      daysWorked = today.weekDays(bom);
-      currentAvg = Math.round(totalHours / daysWorked * 10) / 10;
+      currentAvg = Math.round(totalHours / this.workDaysWorked * 10) / 10;
       $current.html(currentAvg);
       $targetHrs.html(this.targetHrs);
-      eom = moment().date(today.daysInMonth());
-      daysLeft = today.weekDays(eom);
-      targetAvg = Math.round((this.targetHrs - totalHours) / daysLeft * 10) / 10;
+      targetAvg = Math.round((this.targetHrs - totalHours) / this.workDaysLeft * 10) / 10;
       $target.html(targetAvg);
-      daysLeftToday = daysLeft + 1;
-      targetAvgToday = Math.round((this.targetHrs - totalHours + todaysHours) / daysLeftToday * 10) / 10;
+      targetAvgToday = Math.round((this.targetHrs - totalHours + todaysHours) / this.workDaysLeftToday * 10) / 10;
       $targetAvgToday.html(targetAvgToday);
       targetToday = Math.round((targetAvgToday - todaysHours) * 10) / 10;
       $targetToday.html(targetToday);
