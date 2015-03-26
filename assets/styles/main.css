@@ -10,6 +10,7 @@ html, body {
     margin: 15px; }
 
 .menu-button {
+  position: absolute;
   margin: 15px;
   font-size: 25px;
   color: #dddddd;
@@ -68,6 +69,7 @@ html, body {
   height: 100%; }
 
 .menu-wrap {
+  position: absolute;
   background: #fafafa;
   top: 15px;
   left: 15px; }
