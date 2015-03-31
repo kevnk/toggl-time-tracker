@@ -54,6 +54,8 @@
     },
     setupVariables: function() {
       this.documentTitle = document.title;
+      this.vacationDays = 0;
+      this.nmVacationDays = 0;
       this.today = moment().hour(0).minute(0).second(0);
       this.bom = moment().hour(0).minute(0).second(0).date(1);
       this.eom = moment().hour(0).minute(0).second(0).date(this.today.daysInMonth());
@@ -133,9 +135,9 @@
       $current.html(currentAvg);
       $targetHrs.html(this.targetHrs);
       if (!this.tomorrowIsNewMonth) {
-        targetAvg = Math.round((this.targetHrs - totalHours) / this.workDaysLeft * 10) / 10;
+        targetAvg = Math.round((this.targetHrs - totalHours) / (this.workDaysLeft - this.vacationDays) * 10) / 10;
       } else {
-        targetAvg = Math.round(this.targetHrs / this.nmWorkDaysLeft * 10) / 10;
+        targetAvg = Math.round(this.targetHrs / (this.nmWorkDaysLeft - this.nmVacationDays) * 10) / 10;
       }
       $target.html(targetAvg);
       targetAvgToday = Math.round((this.targetHrs - totalHours + todaysHours) / this.workDaysLeftToday * 10) / 10;

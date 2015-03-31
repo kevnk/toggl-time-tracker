@@ -56,12 +56,16 @@ Site =
   setupVariables: ->
     @documentTitle = document.title
 
+    @vacationDays = 0
+    @nmVacationDays = 0
+
     @today = moment().hour(0).minute(0).second(0)
     @bom = moment().hour(0).minute(0).second(0).date(1)
     @eom = moment().hour(0).minute(0).second(0).date( @today.daysInMonth() )
     @workDays = @bom.weekDays( @eom )
     @workDaysWorked = @today.weekDays( @bom )
     @workDaysLeftToday = @workDays - @workDaysWorked
+    # TODO: account for if today is a vacation day too
     @workDaysLeft = if @today.isWeekDay() then @workDaysLeftToday - 1 else @workDaysLeftToday
 
     # For last day of the month, calculate next month (nm)
@@ -72,6 +76,7 @@ Site =
     @nmWorkDays = @nmBom.weekDays( @nmEom )
     @nmWorkDaysWorked = @tomorrow.weekDays( @nmBom )
     @nmWorkDaysLeftToday = @nmWorkDays - @nmWorkDaysWorked
+    # TODO: account for if today is a vacation day too
     @nmWorkDaysLeft = if @tomorrow.isWeekDay() then @nmWorkDaysLeftToday - 1 else @nmWorkDaysLeftToday
 
 
@@ -133,14 +138,15 @@ Site =
 
     # TARGET AVG TOMOROW
     unless @tomorrowIsNewMonth
-      targetAvg = Math.round((@targetHrs - totalHours) / @workDaysLeft * 10) / 10
+      targetAvg = Math.round((@targetHrs - totalHours) / (@workDaysLeft - @vacationDays) * 10) / 10
     else
-      targetAvg = Math.round(@targetHrs / @nmWorkDaysLeft * 10) / 10
+      targetAvg = Math.round(@targetHrs / (@nmWorkDaysLeft - @nmVacationDays) * 10) / 10
 
     $target.html targetAvg
 
 
     # TARGET AVG TODAY
+    # TODO: account for if today is a vacation day too
     targetAvgToday = Math.round((@targetHrs - totalHours + todaysHours) / @workDaysLeftToday * 10) / 10
     $targetAvgToday.html targetAvgToday
 
