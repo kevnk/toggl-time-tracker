@@ -10,6 +10,7 @@
         document.location = location.origin + location.pathname;
       }
       this.setupVariables();
+      this.setVacationsDays();
       this.displaySettings();
       this.attachCopyLink();
       qSince = moment().date(1).format('YYYY-MM-DD');
@@ -25,6 +26,7 @@
       if (ignoreQueryParams == null) {
         ignoreQueryParams = true;
       }
+      this.savedHolidays = localStorage.getItem('holidays') ? localStorage.getItem('holidays').split(',') || [] : void 0;
       this.targetEarnings = !ignoreQueryParams ? this.getParameterByName('e') || localStorage.getItem('earnings') : localStorage.getItem('earnings');
       this.wage = !ignoreQueryParams ? this.getParameterByName('w') || localStorage.getItem('wage') : localStorage.getItem('wage');
       this.userId = !ignoreQueryParams ? this.getParameterByName('u') || localStorage.getItem('userId') : localStorage.getItem('userId');
@@ -54,8 +56,8 @@
     },
     setupVariables: function() {
       this.documentTitle = document.title;
-      this.vacationDays = 0;
-      this.nmVacationDays = 0;
+      this.vacationDays = this.vacationDays || 0;
+      this.nmVacationDays = this.nmVacationDays || 0;
       this.today = moment().hour(0).minute(0).second(0);
       this.bom = moment().hour(0).minute(0).second(0).date(1);
       this.eom = moment().hour(0).minute(0).second(0).date(this.today.daysInMonth());
@@ -202,6 +204,70 @@
           }, 2000);
         });
       });
+    },
+    setVacationsDays: function() {
+      var endCheck, range, startCheck;
+      startCheck = this.bom;
+      endCheck = this.tomorrowIsNewMonth ? this.nmEom : this.eom;
+      range = moment().range(startCheck._d, endCheck._d);
+      this.holidays = [];
+      this.$holidays = $('#holidays');
+      range.by('days', (function(_this) {
+        return function(moment) {
+          var holiday;
+          if (!moment.isWeekDay()) {
+            return;
+          }
+          holiday = moment.holiday();
+          if (!_.isUndefined(holiday)) {
+            return _this.holidays.push({
+              name: holiday,
+              date: moment,
+              checked: _.contains(_this.savedHolidays, holiday)
+            });
+          }
+        };
+      })(this));
+      _.each(this.holidays, (function(_this) {
+        return function(holiday) {
+          var checkedAttr;
+          checkedAttr = holiday.checked ? ' checked' : '';
+          return _this.$holidays.find('form').append('<div class="checkbox"> <label class="btn btn-default"><input' + checkedAttr + ' data-month="' + holiday.date.month() + '" data-name="' + holiday.name + '" type="checkbox"/> ' + holiday.name + '&nbsp;&nbsp;<span>' + holiday.date.format('ddd, MMM Do') + '<span> </label> </div>');
+        };
+      })(this));
+      this.$holidays.find('input').on('change', (function(_this) {
+        return function() {
+          _this.displayVacationDays();
+          _this.storeVacationDays();
+          return _this.displayData();
+        };
+      })(this));
+      return this.displayVacationDays();
+    },
+    displayVacationDays: function() {
+      var $allChecks, $nextMonthChecks, $thisMonthChecks, daysNextMonth, daysThisMonth;
+      $allChecks = this.$holidays.find('input[type=checkbox]:checked');
+      $thisMonthChecks = $allChecks.filter('[data-month=' + this.bom.month() + ']');
+      daysThisMonth = parseFloat($thisMonthChecks.size(), 10);
+      this.vacationDays = daysThisMonth;
+      $nextMonthChecks = $allChecks.filter('[data-month=' + this.nmBom.month() + ']');
+      daysNextMonth = parseFloat($nextMonthChecks.size(), 10);
+      this.nmVacationDays = daysNextMonth;
+      this.setupVariables();
+      $('.vacation-days-display').html(this.vacationDays);
+      if (this.tomorrowIsNewMonth) {
+        return $('.next-month-vacation-days-display').html(this.nmVacationDays).parent().addClass('in');
+      }
+    },
+    storeVacationDays: function() {
+      var holidays;
+      holidays = [];
+      this.$holidays.find('input[type=checkbox]:checked').each(function() {
+        var $el;
+        $el = $(this);
+        return holidays.push($el.data('name'));
+      });
+      return localStorage.setItem('holidays', holidays.join(','));
     },
     attachAutoRefresh: function() {
       this.autoUpdate = 0;

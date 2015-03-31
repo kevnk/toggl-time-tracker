@@ -7,8 +7,11 @@ Site =
       document.location = location.origin + location.pathname
 
     @setupVariables()
+    @setVacationsDays()
     @displaySettings()
     @attachCopyLink()
+
+
 
     qSince = moment().date(1).format('YYYY-MM-DD')
     qUntil = moment().date(moment().daysInMonth()).format('YYYY-MM-DD')
@@ -23,6 +26,7 @@ Site =
 
 
   setLocalData: (ignoreQueryParams=true) ->
+    @savedHolidays = if localStorage.getItem('holidays') then localStorage.getItem('holidays').split(',') || []
     @targetEarnings = unless ignoreQueryParams then @getParameterByName('e') or localStorage.getItem('earnings') else localStorage.getItem('earnings')
     @wage = unless ignoreQueryParams then @getParameterByName('w') or localStorage.getItem('wage') else localStorage.getItem('wage')
     @userId = unless ignoreQueryParams then @getParameterByName('u') or localStorage.getItem('userId') else localStorage.getItem('userId')
@@ -56,8 +60,8 @@ Site =
   setupVariables: ->
     @documentTitle = document.title
 
-    @vacationDays = 0
-    @nmVacationDays = 0
+    @vacationDays = @vacationDays || 0
+    @nmVacationDays = @nmVacationDays || 0
 
     @today = moment().hour(0).minute(0).second(0)
     @bom = moment().hour(0).minute(0).second(0).date(1)
@@ -141,9 +145,7 @@ Site =
       targetAvg = Math.round((@targetHrs - totalHours) / (@workDaysLeft - @vacationDays) * 10) / 10
     else
       targetAvg = Math.round(@targetHrs / (@nmWorkDaysLeft - @nmVacationDays) * 10) / 10
-
     $target.html targetAvg
-
 
     # TARGET AVG TODAY
     # TODO: account for if today is a vacation day too
@@ -219,6 +221,71 @@ Site =
         setTimeout ->
           $('#msg').removeClass('in')
         , 2000
+
+  setVacationsDays: ->
+    startCheck = @bom
+    endCheck = if @tomorrowIsNewMonth then @nmEom else @eom
+    range = moment().range(startCheck._d, endCheck._d)
+    @holidays = [];
+    @$holidays = $('#holidays')
+
+    range.by 'days', (moment) =>
+      return unless moment.isWeekDay()
+      holiday = moment.holiday();
+      unless _.isUndefined(holiday)
+        @holidays.push
+          name: holiday
+          date: moment
+          checked: _.contains( @savedHolidays, holiday )
+
+    _.each @holidays, (holiday) =>
+      checkedAttr = if holiday.checked then ' checked' else ''
+      @$holidays.find('form').append('
+        <div class="checkbox">
+          <label class="btn btn-default"><input' + checkedAttr + ' data-month="' + holiday.date.month() + '" data-name="' + holiday.name + '" type="checkbox"/> ' + holiday.name +
+            '&nbsp;&nbsp;<span>' + holiday.date.format('ddd, MMM Do') + '<span>
+          </label>
+        </div>')
+
+    # @$holidays.find('form').append('
+    #   <div class="form-group">
+    #     <label for="vacation_days">Other Vacation Days</label>
+    #     <input type="number" id="vacation_days">
+    #   </div>')
+
+    @$holidays.find('input').on 'change', =>
+      @displayVacationDays()
+      @storeVacationDays()
+      @displayData()
+
+    @displayVacationDays()
+
+
+  displayVacationDays: ->
+    $allChecks = @$holidays.find('input[type=checkbox]:checked')
+
+    $thisMonthChecks = $allChecks.filter('[data-month=' + @bom.month() + ']')
+    daysThisMonth = parseFloat $thisMonthChecks.size(), 10
+    @vacationDays = daysThisMonth
+
+    $nextMonthChecks = $allChecks.filter('[data-month=' + @nmBom.month() + ']')
+    daysNextMonth = parseFloat $nextMonthChecks.size(), 10
+    @nmVacationDays = daysNextMonth
+
+    @setupVariables()
+
+    $('.vacation-days-display').html @vacationDays
+    if @tomorrowIsNewMonth
+      $('.next-month-vacation-days-display').html(@nmVacationDays).parent().addClass('in')
+
+
+  storeVacationDays: ->
+    holidays = [];
+    @$holidays.find('input[type=checkbox]:checked').each ->
+      $el = $(this)
+      holidays.push($el.data('name'))
+
+    localStorage.setItem('holidays', holidays.join(','))
 
 
   attachAutoRefresh: ->

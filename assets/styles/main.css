@@ -56,6 +56,26 @@ html, body {
     margin: 5px;
     float: none; }
 
+#holidays {
+  margin: 40px 0; }
+  #holidays .display-wrap {
+    color: #cccccc;
+    text-align: center;
+    font-size: 16px; }
+    #holidays .display-wrap span {
+      font-weight: bold; }
+  #holidays form {
+    padding-top: 10px; }
+  #holidays .checkbox {
+    display: inline-block;
+    margin: 5px; }
+    #holidays .checkbox .btn {
+      padding-left: 30px;
+      font-weight: bold; }
+      #holidays .checkbox .btn span {
+        color: #666666;
+        font-weight: normal; }
+
 .container,
 .content {
   background: transparent; }
