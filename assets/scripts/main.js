@@ -60,7 +60,15 @@
       this.workDays = this.bom.weekDays(this.eom);
       this.workDaysWorked = this.today.weekDays(this.bom);
       this.workDaysLeftToday = this.workDays - this.workDaysWorked;
-      return this.workDaysLeft = this.today.isWeekDay() ? this.workDaysLeftToday - 1 : this.workDaysLeftToday;
+      this.workDaysLeft = this.today.isWeekDay() ? this.workDaysLeftToday - 1 : this.workDaysLeftToday;
+      this.tomorrow = moment().hour(0).minute(0).second(0).add(1, 'day');
+      this.tomorrowIsNewMonth = (this.today.month() + 1) === this.tomorrow.month() ? true : false;
+      this.nmBom = moment().hour(0).minute(0).second(0).add(1, 'day').date(1);
+      this.nmEom = moment().hour(0).minute(0).second(0).add(1, 'day').date(this.tomorrow.daysInMonth());
+      this.nmWorkDays = this.nmBom.weekDays(this.nmEom);
+      this.nmWorkDaysWorked = this.tomorrow.weekDays(this.nmBom);
+      this.nmWorkDaysLeftToday = this.nmWorkDays - this.nmWorkDaysWorked;
+      return this.nmWorkDaysLeft = this.tomorrow.isWeekDay() ? this.nmWorkDaysLeftToday - 1 : this.nmWorkDaysLeftToday;
     },
     getData: function() {
       var that;
@@ -124,7 +132,11 @@
       currentAvg = Math.round(totalHours / this.workDaysWorked * 10) / 10;
       $current.html(currentAvg);
       $targetHrs.html(this.targetHrs);
-      targetAvg = Math.round((this.targetHrs - totalHours) / this.workDaysLeft * 10) / 10;
+      if (!this.tomorrowIsNewMonth) {
+        targetAvg = Math.round((this.targetHrs - totalHours) / this.workDaysLeft * 10) / 10;
+      } else {
+        targetAvg = Math.round(this.targetHrs / this.nmWorkDaysLeft * 10) / 10;
+      }
       $target.html(targetAvg);
       targetAvgToday = Math.round((this.targetHrs - totalHours + todaysHours) / this.workDaysLeftToday * 10) / 10;
       $targetAvgToday.html(targetAvgToday);

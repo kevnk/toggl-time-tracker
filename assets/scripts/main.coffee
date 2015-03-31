@@ -64,6 +64,16 @@ Site =
     @workDaysLeftToday = @workDays - @workDaysWorked
     @workDaysLeft = if @today.isWeekDay() then @workDaysLeftToday - 1 else @workDaysLeftToday
 
+    # For last day of the month, calculate next month (nm)
+    @tomorrow = moment().hour(0).minute(0).second(0).add(1, 'day')
+    @tomorrowIsNewMonth = if (@today.month() + 1) is @tomorrow.month() then true else false
+    @nmBom = moment().hour(0).minute(0).second(0).add(1, 'day').date(1)
+    @nmEom = moment().hour(0).minute(0).second(0).add(1, 'day').date( @tomorrow.daysInMonth() )
+    @nmWorkDays = @nmBom.weekDays( @nmEom )
+    @nmWorkDaysWorked = @tomorrow.weekDays( @nmBom )
+    @nmWorkDaysLeftToday = @nmWorkDays - @nmWorkDaysWorked
+    @nmWorkDaysLeft = if @tomorrow.isWeekDay() then @nmWorkDaysLeftToday - 1 else @nmWorkDaysLeftToday
+
 
   getData: ->
     that = this
@@ -122,8 +132,13 @@ Site =
     $targetHrs.html @targetHrs
 
     # TARGET AVG TOMOROW
-    targetAvg = Math.round((@targetHrs - totalHours) / @workDaysLeft * 10) / 10
+    unless @tomorrowIsNewMonth
+      targetAvg = Math.round((@targetHrs - totalHours) / @workDaysLeft * 10) / 10
+    else
+      targetAvg = Math.round(@targetHrs / @nmWorkDaysLeft * 10) / 10
+
     $target.html targetAvg
+
 
     # TARGET AVG TODAY
     targetAvgToday = Math.round((@targetHrs - totalHours + todaysHours) / @workDaysLeftToday * 10) / 10
