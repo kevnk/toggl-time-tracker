@@ -70,7 +70,7 @@ Site =
     @workDaysWorked = @today.weekDays( @bom )
     @workDaysLeftToday = @workDays - @workDaysWorked
     # TODO: account for if today is a vacation day too
-    @workDaysLeft = if @today.isWeekDay() then @workDaysLeftToday - 1 else @workDaysLeftToday
+    @workDaysLeft = if @today.isWeekDay() or @today.holiday() then @workDaysLeftToday - 1 else @workDaysLeftToday
 
     # For last day of the month, calculate next month (nm)
     @tomorrow = moment().hour(0).minute(0).second(0).add(1, 'day')
@@ -81,7 +81,7 @@ Site =
     @nmWorkDaysWorked = @tomorrow.weekDays( @nmBom )
     @nmWorkDaysLeftToday = @nmWorkDays - @nmWorkDaysWorked
     # TODO: account for if today is a vacation day too
-    @nmWorkDaysLeft = if @tomorrow.isWeekDay() then @nmWorkDaysLeftToday - 1 else @nmWorkDaysLeftToday
+    @nmWorkDaysLeft = if @tomorrow.isWeekDay() or @tomorrow.holiday() then @nmWorkDaysLeftToday - 1 else @nmWorkDaysLeftToday
 
 
   getData: ->
@@ -247,12 +247,6 @@ Site =
           </label>
         </div>')
 
-    # @$holidays.find('form').append('
-    #   <div class="form-group">
-    #     <label for="vacation_days">Other Vacation Days</label>
-    #     <input type="number" id="vacation_days">
-    #   </div>')
-
     @$holidays.find('input').on 'change', =>
       @displayVacationDays()
       @storeVacationDays()
@@ -266,17 +260,26 @@ Site =
 
     $thisMonthChecks = $allChecks.filter('[data-month=' + @bom.month() + ']')
     daysThisMonth = parseFloat $thisMonthChecks.size(), 10
-    @vacationDays = daysThisMonth
 
     $nextMonthChecks = $allChecks.filter('[data-month=' + @nmBom.month() + ']')
     daysNextMonth = parseFloat $nextMonthChecks.size(), 10
+
+    @vacationDays = daysThisMonth
     @nmVacationDays = daysNextMonth
 
+    # Don't count days if they are today or in the past
+    checkedHolidays = _.where @holidays, checked: true
+    _.each checkedHolidays, (holiday) =>
+      @vacationDays-- if holiday.date <= @today
+      @nmVacationDays-- if holiday.date <= @tomorrow
+
+    # Recalculate everything based off vacation days
     @setupVariables()
 
-    $('.vacation-days-display').html @vacationDays
+    # Display the number of vacation days
+    $('.vacation-days-display').html daysThisMonth
     if @tomorrowIsNewMonth
-      $('.next-month-vacation-days-display').html(@nmVacationDays).parent().addClass('in')
+      $('.next-month-vacation-days-display').html(daysNextMonth).parent().addClass('in')
 
 
   storeVacationDays: ->

@@ -64,7 +64,7 @@
       this.workDays = this.bom.weekDays(this.eom);
       this.workDaysWorked = this.today.weekDays(this.bom);
       this.workDaysLeftToday = this.workDays - this.workDaysWorked;
-      this.workDaysLeft = this.today.isWeekDay() ? this.workDaysLeftToday - 1 : this.workDaysLeftToday;
+      this.workDaysLeft = this.today.isWeekDay() || this.today.holiday() ? this.workDaysLeftToday - 1 : this.workDaysLeftToday;
       this.tomorrow = moment().hour(0).minute(0).second(0).add(1, 'day');
       this.tomorrowIsNewMonth = (this.today.month() + 1) === this.tomorrow.month() ? true : false;
       this.nmBom = moment().hour(0).minute(0).second(0).add(1, 'day').date(1);
@@ -72,7 +72,7 @@
       this.nmWorkDays = this.nmBom.weekDays(this.nmEom);
       this.nmWorkDaysWorked = this.tomorrow.weekDays(this.nmBom);
       this.nmWorkDaysLeftToday = this.nmWorkDays - this.nmWorkDaysWorked;
-      return this.nmWorkDaysLeft = this.tomorrow.isWeekDay() ? this.nmWorkDaysLeftToday - 1 : this.nmWorkDaysLeftToday;
+      return this.nmWorkDaysLeft = this.tomorrow.isWeekDay() || this.tomorrow.holiday() ? this.nmWorkDaysLeftToday - 1 : this.nmWorkDaysLeftToday;
     },
     getData: function() {
       var that;
@@ -245,18 +245,31 @@
       return this.displayVacationDays();
     },
     displayVacationDays: function() {
-      var $allChecks, $nextMonthChecks, $thisMonthChecks, daysNextMonth, daysThisMonth;
+      var $allChecks, $nextMonthChecks, $thisMonthChecks, checkedHolidays, daysNextMonth, daysThisMonth;
       $allChecks = this.$holidays.find('input[type=checkbox]:checked');
       $thisMonthChecks = $allChecks.filter('[data-month=' + this.bom.month() + ']');
       daysThisMonth = parseFloat($thisMonthChecks.size(), 10);
-      this.vacationDays = daysThisMonth;
       $nextMonthChecks = $allChecks.filter('[data-month=' + this.nmBom.month() + ']');
       daysNextMonth = parseFloat($nextMonthChecks.size(), 10);
+      this.vacationDays = daysThisMonth;
       this.nmVacationDays = daysNextMonth;
+      checkedHolidays = _.where(this.holidays, {
+        checked: true
+      });
+      _.each(checkedHolidays, (function(_this) {
+        return function(holiday) {
+          if (holiday.date <= _this.today) {
+            _this.vacationDays--;
+          }
+          if (holiday.date <= _this.tomorrow) {
+            return _this.nmVacationDays--;
+          }
+        };
+      })(this));
       this.setupVariables();
-      $('.vacation-days-display').html(this.vacationDays);
+      $('.vacation-days-display').html(daysThisMonth);
       if (this.tomorrowIsNewMonth) {
-        return $('.next-month-vacation-days-display').html(this.nmVacationDays).parent().addClass('in');
+        return $('.next-month-vacation-days-display').html(daysNextMonth).parent().addClass('in');
       }
     },
     storeVacationDays: function() {
