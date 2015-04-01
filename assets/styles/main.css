@@ -75,6 +75,11 @@ html, body {
       #holidays .checkbox .btn span {
         color: #666666;
         font-weight: normal; }
+  #holidays .btn-wrap {
+    font-size: 0;
+    text-align: center; }
+    #holidays .btn-wrap .btn {
+      margin: 10px 5px; }
 
 .container,
 .content {

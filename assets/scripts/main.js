@@ -84,12 +84,20 @@
     setCalculatedVariables: function() {
       this.isVacationDay = _.some(_.filter(this.savedVacations, (function(_this) {
         return function(vacation) {
-          return _this.holidaysByName[vacation].date.format('YYYYMMDD') === _this.today.format('YYYYMMDD');
+          if (_this.holidaysByName[vacation]) {
+            return _this.holidaysByName[vacation].date.format('YYYYMMDD') === _this.today.format('YYYYMMDD');
+          } else {
+            return false;
+          }
         };
       })(this)));
       this.vacationDaysRemaining = _.size(_.filter(this.savedVacations, (function(_this) {
         return function(vacation) {
-          return _this.holidaysByName[vacation].date > _this.today;
+          if (_this.holidaysByName[vacation]) {
+            return _this.holidaysByName[vacation].date > _this.today;
+          } else {
+            return true;
+          }
         };
       })(this)));
       this.vacationDaysSpent = _.size(this.savedVacations) - this.vacationDaysRemaining;
@@ -100,7 +108,11 @@
       this.workDaysLeftTomorrow = this.isWorkDay ? this.workDaysLeft - 1 : this.workDaysLeft;
       this.nmIsVacationDay = _.some(_.filter(this.savedVacations, (function(_this) {
         return function(vacation) {
-          return _this.holidaysByName[vacation].date.format('YYYYMMDD') === _this.tomorrow.format('YYYYMMDD');
+          if (_this.holidaysByName[vacation]) {
+            return _this.holidaysByName[vacation].date.format('YYYYMMDD') === _this.tomorrow.format('YYYYMMDD');
+          } else {
+            return false;
+          }
         };
       })(this)));
       this.nmIsWorkDay = this.nmIsWeekday && !this.nmIsVacationDay;
@@ -253,6 +265,7 @@
       });
     },
     attachVacationsDays: function() {
+      var $minusBtn, $plusBtn, addManualVacationInput, form, manualVacations;
       this.$holidays = $('#holidays');
       _.each(this.holidays, (function(_this) {
         return function(holiday) {
@@ -261,13 +274,46 @@
           return _this.$holidays.find('form').append('<div class="checkbox"> <label class="btn btn-default"><input' + checkedAttr + ' data-name="' + holiday.name + '" type="checkbox"/> ' + holiday.name + '&nbsp;&nbsp;<span>' + holiday.date.format('ddd, MMM Do') + '<span> </label> </div>');
         };
       })(this));
-      return this.$holidays.find('input').on('change', (function(_this) {
+      this.$holidays.find('input').on('change', (function(_this) {
         return function() {
           _this.storeVacationDays();
           _this.setCalculatedVariables();
           return _this.displayData();
         };
       })(this));
+      form = this.$holidays.find('form');
+      $minusBtn = this.$holidays.find('#minus_vacation_day');
+      $plusBtn = this.$holidays.find('#plus_vacation_day');
+      addManualVacationInput = function() {
+        return form.append($('<div class="hide checkbox"> <input checked type="checkbox" data-name="' + moment().format('YYYYMMDDhhmmss') + '"/> </div>'));
+      };
+      manualVacations = _.filter(this.savedVacations, function(vacation) {
+        return /\d/.test(vacation);
+      });
+      _.each(manualVacations, addManualVacationInput);
+      $plusBtn.on('click', (function(_this) {
+        return function(e) {
+          addManualVacationInput();
+          $minusBtn.removeClass('hide');
+          _this.storeVacationDays();
+          _this.setCalculatedVariables();
+          return _this.displayData();
+        };
+      })(this));
+      $minusBtn.on('click', (function(_this) {
+        return function(e) {
+          if (!(form.find('.checkbox.hide').size() >= 2)) {
+            $minusBtn.addClass('hide');
+          }
+          form.find('.checkbox.hide').first().remove();
+          _this.storeVacationDays();
+          _this.setCalculatedVariables();
+          return _this.displayData();
+        };
+      })(this));
+      if (form.find('.checkbox.hide').size() < 1) {
+        return $minusBtn.addClass('hide');
+      }
     },
     storeVacationDays: function() {
       var vacations;

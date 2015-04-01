@@ -79,15 +79,19 @@ Site =
         @holidaysByName[holiday] = holidayObj
 
 
-
-
   setCalculatedVariables: ->
     # Vacations
     @isVacationDay = _.some _.filter @savedVacations, (vacation) =>
-      @holidaysByName[vacation].date.format('YYYYMMDD') is @today.format('YYYYMMDD')
+      if @holidaysByName[vacation]
+        @holidaysByName[vacation].date.format('YYYYMMDD') is @today.format('YYYYMMDD')
+      else
+        false
 
     @vacationDaysRemaining = _.size _.filter @savedVacations, (vacation) =>
-      @holidaysByName[vacation].date > @today
+      if @holidaysByName[vacation]
+        @holidaysByName[vacation].date > @today
+      else
+        true
 
     @vacationDaysSpent = _.size(@savedVacations) - @vacationDaysRemaining
 
@@ -102,7 +106,10 @@ Site =
     # For last day of the month, calculate everything for next month (nm)
     # ----------------------------------------------------
     @nmIsVacationDay = _.some _.filter @savedVacations, (vacation) =>
-      @holidaysByName[vacation].date.format('YYYYMMDD') is @tomorrow.format('YYYYMMDD')
+      if @holidaysByName[vacation]
+        @holidaysByName[vacation].date.format('YYYYMMDD') is @tomorrow.format('YYYYMMDD')
+      else
+        false
 
     @nmIsWorkDay = @nmIsWeekday and not @nmIsVacationDay
 
@@ -283,6 +290,36 @@ Site =
       @storeVacationDays()
       @setCalculatedVariables()
       @displayData()
+
+    # Manually add/subtract vacation days
+    form = @$holidays.find('form')
+    $minusBtn = @$holidays.find('#minus_vacation_day')
+    $plusBtn = @$holidays.find('#plus_vacation_day')
+
+    addManualVacationInput = ->
+      form.append($('<div class="hide checkbox">
+      <input checked type="checkbox" data-name="' + moment().format('YYYYMMDDhhmmss') + '"/>
+      </div>'))
+
+    # Find manually added vacations and add hidden inputs
+    manualVacations = _.filter @savedVacations, (vacation) -> /\d/.test(vacation)
+    _.each manualVacations, addManualVacationInput
+
+    $plusBtn.on 'click', (e) =>
+      addManualVacationInput()
+      $minusBtn.removeClass('hide')
+      @storeVacationDays()
+      @setCalculatedVariables()
+      @displayData()
+
+    $minusBtn.on 'click', (e) =>
+      $minusBtn.addClass('hide') unless form.find('.checkbox.hide').size() >= 2
+      form.find('.checkbox.hide').first().remove()
+      @storeVacationDays()
+      @setCalculatedVariables()
+      @displayData()
+
+    $minusBtn.addClass('hide') if form.find('.checkbox.hide').size() < 1
 
 
   storeVacationDays: ->
