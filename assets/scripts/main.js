@@ -4,21 +4,15 @@
 
   Site = {
     init: function() {
-      var qSince, qToday, qUntil;
       this.setLocalData(false);
       this.documentTitle = document.title;
       if (location.search) {
         document.location = location.origin + location.pathname;
       }
-      this.setupVariables();
-      this.setVacationsDays();
+      this.setCalculatedVariables();
+      this.attachVacationsDays();
       this.displaySettings();
       this.attachCopyLink();
-      qSince = moment().date(1).format('YYYY-MM-DD');
-      qUntil = moment().date(moment().daysInMonth()).format('YYYY-MM-DD');
-      qToday = moment().format('YYYY-MM-DD');
-      this.detailsUrl = 'https://toggl.com/reports/api/v2/details?rounding=Off&status=active&user_ids=' + this.userId + '&name=&billable=both&calculate=time&sortDirection=asc&sortBy=date&page=1&description=&since=' + qSince + '&until=' + qUntil + '&workspace_id=' + this.workspaceId + '&period=thisMonth&with_total_currencies=1&grouping=&subgrouping=time_entries&order_field=date&order_desc=off&distinct_rates=Off&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token=';
-      this.summaryUrl = 'https://toggl.com/reports/api/v2/summary.json?grouping=projects&subgrouping=time_entries&order_field=title&order_desc=off&rounding=Off&distinct_rates=Off&status=active&user_ids=' + this.userId + '&name=&billable=both&workspace_id=' + this.workspaceId + '&calculate=time&sortDirection=asc&sortBy=title&page=1&description=&since=' + qToday + '&until=' + qToday + '&period=today&with_total_currencies=1&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token=';
       this.getData();
       this.attachAutoRefresh();
       return this;
@@ -27,7 +21,6 @@
       if (ignoreQueryParams == null) {
         ignoreQueryParams = true;
       }
-      this.savedHolidays = localStorage.getItem('holidays') ? localStorage.getItem('holidays').split(',') || [] : void 0;
       this.targetEarnings = !ignoreQueryParams ? this.getParameterByName('e') || localStorage.getItem('earnings') : localStorage.getItem('earnings');
       this.wage = !ignoreQueryParams ? this.getParameterByName('w') || localStorage.getItem('wage') : localStorage.getItem('wage');
       this.userId = !ignoreQueryParams ? this.getParameterByName('u') || localStorage.getItem('userId') : localStorage.getItem('userId');
@@ -53,29 +46,76 @@
       localStorage.setItem('userId', this.userId);
       localStorage.setItem('workspaceId', this.workspaceId);
       localStorage.setItem('apiKey', this.apiKey);
-      return this.targetHrs = this.targetEarnings / this.wage;
-    },
-    setupVariables: function() {
-      this.vacationDays = this.vacationDays || 0;
-      this.nmVacationDays = this.nmVacationDays || 0;
+      this.targetHrs = this.targetEarnings / this.wage;
       this.today = moment().hour(0).minute(0).second(0);
-      this.bom = moment().hour(0).minute(0).second(0).date(1);
-      this.eom = moment().hour(0).minute(0).second(0).date(this.today.daysInMonth());
-      this.workDays = this.bom.weekDays(this.eom);
-      this.workDaysWorked = this.today.weekDays(this.bom);
-      this.workDaysLeftToday = this.workDays - this.workDaysWorked;
-      this.workDaysLeft = this.today.isWeekDay() || this.today.holiday() ? this.workDaysLeftToday - 1 : this.workDaysLeftToday;
-      this.tomorrow = moment().hour(0).minute(0).second(0).add(1, 'day');
-      this.tomorrowIsNewMonth = (this.today.month() + 1) === this.tomorrow.month() ? true : false;
-      this.nmBom = moment().hour(0).minute(0).second(0).add(1, 'day').date(1);
-      this.nmEom = moment().hour(0).minute(0).second(0).add(1, 'day').date(this.tomorrow.daysInMonth());
-      this.nmWorkDays = this.nmBom.weekDays(this.nmEom);
-      this.nmWorkDaysWorked = this.tomorrow.weekDays(this.nmBom);
-      this.nmWorkDaysLeftToday = this.nmWorkDays - this.nmWorkDaysWorked;
-      return this.nmWorkDaysLeft = this.tomorrow.isWeekDay() || this.tomorrow.holiday() ? this.nmWorkDaysLeftToday - 1 : this.nmWorkDaysLeftToday;
+      this.bom = moment(this.today._d).date(1);
+      this.eom = moment(this.today._d).date(this.today.daysInMonth());
+      this.tomorrow = moment(this.today._d).add(1, 'day');
+      this.nmBom = moment(this.tomorrow._d).date(1);
+      this.nmEom = moment(this.tomorrow._d).date(this.tomorrow.daysInMonth());
+      this.isTheFirst = this.today.date() === this.bom.date();
+      this.isTheLast = this.today.date() === this.eom.date();
+      this.isWeekday = this.today.isWeekDay();
+      this.isHoliday = this.today.holiday();
+      this.nmIsWeekday = this.tomorrow.isWeekDay();
+      this.nmIsHoliday = this.tomorrow.holiday();
+      this.savedVacations = localStorage.getItem('vacations') ? localStorage.getItem('vacations').split(',') : [];
+      this.holidays = [];
+      this.holidaysByName = {};
+      return moment().range(this.bom._d, this.eom._d).by('days', (function(_this) {
+        return function(moment) {
+          var holiday, holidayObj;
+          if (!moment.isWeekDay()) {
+            return;
+          }
+          holiday = moment.holiday();
+          if (!_.isUndefined(holiday)) {
+            holidayObj = {
+              name: holiday,
+              date: moment,
+              checked: _.contains(_this.savedVacations, holiday)
+            };
+            _this.holidays.push(holidayObj);
+            return _this.holidaysByName[holiday] = holidayObj;
+          }
+        };
+      })(this));
+    },
+    setCalculatedVariables: function() {
+      this.isVacationDay = _.some(_.filter(this.savedVacations, (function(_this) {
+        return function(vacation) {
+          return _this.holidaysByName[vacation].date.format('YYYYMMDD') === _this.today.format('YYYYMMDD');
+        };
+      })(this)));
+      this.vacationDaysRemaining = _.size(_.filter(this.savedVacations, (function(_this) {
+        return function(vacation) {
+          return _this.holidaysByName[vacation].date > _this.today;
+        };
+      })(this)));
+      this.vacationDaysSpent = _.size(this.savedVacations) - this.vacationDaysRemaining;
+      this.isWorkDay = this.isWeekday && !this.isVacationDay;
+      this.workDaysTotal = this.bom.weekDays(this.eom) + 1;
+      this.workDaysWorked = this.bom.weekDays(this.today) - this.vacationDaysSpent;
+      this.workDaysLeft = this.workDaysTotal - this.workDaysWorked - this.vacationDaysRemaining;
+      this.workDaysLeftTomorrow = this.isWorkDay ? this.workDaysLeft - 1 : this.workDaysLeft;
+      this.nmIsVacationDay = _.some(_.filter(this.savedVacations, (function(_this) {
+        return function(vacation) {
+          return _this.holidaysByName[vacation].date.format('YYYYMMDD') === _this.tomorrow.format('YYYYMMDD');
+        };
+      })(this)));
+      this.nmIsWorkDay = this.nmIsWeekday && !this.nmIsVacationDay;
+      this.nmWorkDaysTotal = this.nmBom.weekDays(this.nmEom) + 1;
+      this.nmWorkDaysWorked = 0;
+      this.nmWorkDaysLeft = this.nmWorkDaysTotal;
+      return this.nmWorkDaysLeftTomorrow = this.nmIsWorkDay ? this.nmWorkDaysLeft - 1 : this.nmWorkDaysLeft;
     },
     getData: function() {
-      var that;
+      var qSince, qToday, qUntil, that;
+      qSince = this.bom.format('YYYY-MM-DD');
+      qUntil = this.eom.format('YYYY-MM-DD');
+      qToday = this.today.format('YYYY-MM-DD');
+      this.detailsUrl = 'https://toggl.com/reports/api/v2/details?rounding=Off&status=active&user_ids=' + this.userId + '&name=&billable=both&calculate=time&sortDirection=asc&sortBy=date&page=1&description=&since=' + qSince + '&until=' + qUntil + '&workspace_id=' + this.workspaceId + '&period=thisMonth&with_total_currencies=1&grouping=&subgrouping=time_entries&order_field=date&order_desc=off&distinct_rates=Off&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token=';
+      this.summaryUrl = 'https://toggl.com/reports/api/v2/summary.json?grouping=projects&subgrouping=time_entries&order_field=title&order_desc=off&rounding=Off&distinct_rates=Off&status=active&user_ids=' + this.userId + '&name=&billable=both&workspace_id=' + this.workspaceId + '&calculate=time&sortDirection=asc&sortBy=title&page=1&description=&since=' + qToday + '&until=' + qToday + '&period=today&with_total_currencies=1&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token=';
       that = this;
       $('.loading').fadeIn('fast');
       $('.row.fade.in').removeClass('in');
@@ -122,7 +162,7 @@
       })(this));
     },
     displayData: function() {
-      var $clockOut, $current, $target, $targetAvgToday, $targetHrs, $targetToday, $total, currentAvg, eod, targetAvg, targetAvgToday, targetToday, todaysHours, totalHours;
+      var $clockOut, $current, $target, $targetAvgToday, $targetHrs, $targetToday, $total, $vacation, currentAvg, eod, targetAvg, targetAvgToday, targetToday, todaysHours, totalHours;
       $total = $('.total-hours-display');
       $current = $('.current-avg-display');
       $target = $('.target-avg-display');
@@ -130,6 +170,7 @@
       $targetToday = $('.target-today-display');
       $targetAvgToday = $('.target-avg-today-display');
       $clockOut = $('.clock-out-display');
+      $vacation = $('.vacation-days-display');
       todaysHours = Math.round(this.summary.total_grand / 1000 / 60 / 60 * 10) / 10;
       totalHours = Math.round(this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
       $total.html(totalHours);
@@ -137,18 +178,23 @@
       currentAvg = Math.round(currentAvg * 10) / 10;
       $current.html(currentAvg);
       $targetHrs.html(this.targetHrs);
-      if (!this.tomorrowIsNewMonth) {
-        targetAvg = Math.round((this.targetHrs - totalHours) / (this.workDaysLeft - this.vacationDays) * 10) / 10;
+      if (!this.isTheLast) {
+        targetAvg = Math.round((this.targetHrs - totalHours) / this.workDaysLeftTomorrow * 10) / 10;
       } else {
-        targetAvg = Math.round(this.targetHrs / (this.nmWorkDaysLeft - this.nmVacationDays) * 10) / 10;
+        targetAvg = Math.round(this.targetHrs / this.nmWorkDaysLeftTomorrow * 10) / 10;
       }
       $target.html(targetAvg);
-      targetAvgToday = Math.round((this.targetHrs - totalHours + todaysHours) / this.workDaysLeftToday * 10) / 10;
+      if (!this.isTheFirst) {
+        targetAvgToday = Math.round((this.targetHrs - totalHours + todaysHours) / this.workDaysLeft * 10) / 10;
+      } else {
+        targetAvgToday = Math.round((this.targetHrs - todaysHours) / this.workDaysLeft * 10) / 10;
+      }
       $targetAvgToday.html(targetAvgToday);
       targetToday = Math.round((targetAvgToday - todaysHours) * 10) / 10;
       $targetToday.html(targetToday);
       eod = moment().add(targetToday, 'h').format('h:mma');
       $clockOut.html(eod);
+      $vacation.html(this.vacationDaysRemaining);
       document.title = '(' + targetToday + ') ' + this.documentTitle;
       $('body').removeClass('show-menu');
       return $('.loading').stop().fadeOut(function() {
@@ -206,82 +252,33 @@
         });
       });
     },
-    setVacationsDays: function() {
-      var endCheck, range, startCheck;
-      startCheck = this.bom;
-      endCheck = this.tomorrowIsNewMonth ? this.nmEom : this.eom;
-      range = moment().range(startCheck._d, endCheck._d);
-      this.holidays = [];
+    attachVacationsDays: function() {
       this.$holidays = $('#holidays');
-      range.by('days', (function(_this) {
-        return function(moment) {
-          var holiday;
-          if (!moment.isWeekDay()) {
-            return;
-          }
-          holiday = moment.holiday();
-          if (!_.isUndefined(holiday)) {
-            return _this.holidays.push({
-              name: holiday,
-              date: moment,
-              checked: _.contains(_this.savedHolidays, holiday)
-            });
-          }
-        };
-      })(this));
       _.each(this.holidays, (function(_this) {
         return function(holiday) {
           var checkedAttr;
           checkedAttr = holiday.checked ? ' checked' : '';
-          return _this.$holidays.find('form').append('<div class="checkbox"> <label class="btn btn-default"><input' + checkedAttr + ' data-month="' + holiday.date.month() + '" data-name="' + holiday.name + '" type="checkbox"/> ' + holiday.name + '&nbsp;&nbsp;<span>' + holiday.date.format('ddd, MMM Do') + '<span> </label> </div>');
+          return _this.$holidays.find('form').append('<div class="checkbox"> <label class="btn btn-default"><input' + checkedAttr + ' data-name="' + holiday.name + '" type="checkbox"/> ' + holiday.name + '&nbsp;&nbsp;<span>' + holiday.date.format('ddd, MMM Do') + '<span> </label> </div>');
         };
       })(this));
-      this.$holidays.find('input').on('change', (function(_this) {
+      return this.$holidays.find('input').on('change', (function(_this) {
         return function() {
-          _this.displayVacationDays();
           _this.storeVacationDays();
+          _this.setCalculatedVariables();
           return _this.displayData();
         };
       })(this));
-      return this.displayVacationDays();
-    },
-    displayVacationDays: function() {
-      var $allChecks, $nextMonthChecks, $thisMonthChecks, checkedHolidays, daysNextMonth, daysThisMonth;
-      $allChecks = this.$holidays.find('input[type=checkbox]:checked');
-      $thisMonthChecks = $allChecks.filter('[data-month=' + this.bom.month() + ']');
-      daysThisMonth = parseFloat($thisMonthChecks.size(), 10);
-      $nextMonthChecks = $allChecks.filter('[data-month=' + this.nmBom.month() + ']');
-      daysNextMonth = parseFloat($nextMonthChecks.size(), 10);
-      this.vacationDays = daysThisMonth;
-      this.nmVacationDays = daysNextMonth;
-      checkedHolidays = _.where(this.holidays, {
-        checked: true
-      });
-      _.each(checkedHolidays, (function(_this) {
-        return function(holiday) {
-          if (holiday.date <= _this.today) {
-            _this.vacationDays--;
-          }
-          if (holiday.date <= _this.tomorrow) {
-            return _this.nmVacationDays--;
-          }
-        };
-      })(this));
-      this.setupVariables();
-      $('.vacation-days-display').html(daysThisMonth);
-      if (this.tomorrowIsNewMonth) {
-        return $('.next-month-vacation-days-display').html(daysNextMonth).parent().addClass('in');
-      }
     },
     storeVacationDays: function() {
-      var holidays;
-      holidays = [];
+      var vacations;
+      vacations = [];
       this.$holidays.find('input[type=checkbox]:checked').each(function() {
         var $el;
         $el = $(this);
-        return holidays.push($el.data('name'));
+        return vacations.push($el.data('name'));
       });
-      return localStorage.setItem('holidays', holidays.join(','));
+      this.savedVacations = vacations;
+      return localStorage.setItem('vacations', vacations.join(','));
     },
     attachAutoRefresh: function() {
       this.autoUpdate = 0;
