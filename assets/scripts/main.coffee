@@ -133,7 +133,10 @@ Site =
     $total.html totalHours
 
     # CURRENT / yesterday's avg
-    currentAvg = Math.round(totalHours / @workDaysWorked * 10) / 10
+    # If workDaysWorked calculate avg,
+    # else no workDaysWorked (aka first day of the month) just show todays hours
+    currentAvg = if @workDaysWorked then totalHours / @workDaysWorked else totalHours
+    currentAvg = Math.round(currentAvg * 10) / 10
     $current.html currentAvg
 
     # TARGET HOURS

@@ -133,7 +133,8 @@
       todaysHours = Math.round(this.summary.total_grand / 1000 / 60 / 60 * 10) / 10;
       totalHours = Math.round(this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
       $total.html(totalHours);
-      currentAvg = Math.round(totalHours / this.workDaysWorked * 10) / 10;
+      currentAvg = this.workDaysWorked ? totalHours / this.workDaysWorked : totalHours;
+      currentAvg = Math.round(currentAvg * 10) / 10;
       $current.html(currentAvg);
       $targetHrs.html(this.targetHrs);
       if (!this.tomorrowIsNewMonth) {
