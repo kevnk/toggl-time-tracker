@@ -1,6 +1,7 @@
 Site =
   init: () ->
     @setLocalData(false)
+    @documentTitle = document.title
 
     # Redirect without the query params if they existed
     if location.search
@@ -58,8 +59,6 @@ Site =
 
 
   setupVariables: ->
-    @documentTitle = document.title
-
     @vacationDays = @vacationDays || 0
     @nmVacationDays = @nmVacationDays || 0
 

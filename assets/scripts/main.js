@@ -6,6 +6,7 @@
     init: function() {
       var qSince, qToday, qUntil;
       this.setLocalData(false);
+      this.documentTitle = document.title;
       if (location.search) {
         document.location = location.origin + location.pathname;
       }
@@ -55,7 +56,6 @@
       return this.targetHrs = this.targetEarnings / this.wage;
     },
     setupVariables: function() {
-      this.documentTitle = document.title;
       this.vacationDays = this.vacationDays || 0;
       this.nmVacationDays = this.nmVacationDays || 0;
       this.today = moment().hour(0).minute(0).second(0);
