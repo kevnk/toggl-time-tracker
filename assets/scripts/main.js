@@ -153,6 +153,8 @@
         })(this)
       })).done((function(_this) {
         return function() {
+          _this.todaysHours = Math.round(_this.summary.total_grand / 1000 / 60 / 60 * 10) / 10;
+          _this.totalHours = Math.round(_this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
           return _this.displayData();
         };
       })(this)).fail((function(_this) {
@@ -162,7 +164,7 @@
       })(this));
     },
     displayData: function() {
-      var $clockOut, $current, $target, $targetAvgToday, $targetHrs, $targetToday, $total, $vacation, currentAvg, eod, targetAvg, targetAvgToday, targetToday, todaysHours, totalHours;
+      var $clockOut, $current, $target, $targetAvgToday, $targetHrs, $targetToday, $total, $vacation, currentAvg, eod, targetAvg, targetAvgToday, targetToday;
       $total = $('.total-hours-display');
       $current = $('.current-avg-display');
       $target = $('.target-avg-display');
@@ -171,26 +173,24 @@
       $targetAvgToday = $('.target-avg-today-display');
       $clockOut = $('.clock-out-display');
       $vacation = $('.vacation-days-display');
-      todaysHours = Math.round(this.summary.total_grand / 1000 / 60 / 60 * 10) / 10;
-      totalHours = Math.round(this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
-      $total.html(totalHours);
-      currentAvg = this.workDaysWorked ? totalHours / this.workDaysWorked : totalHours;
+      $total.html(this.totalHours);
+      currentAvg = this.workDaysWorked ? this.totalHours / this.workDaysWorked : this.totalHours;
       currentAvg = Math.round(currentAvg * 10) / 10;
       $current.html(currentAvg);
       $targetHrs.html(this.targetHrs);
       if (!this.isTheLast) {
-        targetAvg = Math.round((this.targetHrs - totalHours) / this.workDaysLeftTomorrow * 10) / 10;
+        targetAvg = Math.round((this.targetHrs - this.totalHours) / this.workDaysLeftTomorrow * 10) / 10;
       } else {
         targetAvg = Math.round(this.targetHrs / this.nmWorkDaysLeftTomorrow * 10) / 10;
       }
       $target.html(targetAvg);
       if (!this.isTheFirst) {
-        targetAvgToday = Math.round((this.targetHrs - totalHours + todaysHours) / this.workDaysLeft * 10) / 10;
+        targetAvgToday = Math.round((this.targetHrs - this.totalHours + this.todaysHours) / this.workDaysLeft * 10) / 10;
       } else {
-        targetAvgToday = Math.round((this.targetHrs - todaysHours) / this.workDaysLeft * 10) / 10;
+        targetAvgToday = Math.round((this.targetHrs - this.todaysHours) / this.workDaysLeft * 10) / 10;
       }
       $targetAvgToday.html(targetAvgToday);
-      targetToday = Math.round((targetAvgToday - todaysHours) * 10) / 10;
+      targetToday = Math.round((targetAvgToday - this.todaysHours) * 10) / 10;
       $targetToday.html(targetToday);
       eod = moment().add(targetToday, 'h').format('h:mma');
       $clockOut.html(eod);

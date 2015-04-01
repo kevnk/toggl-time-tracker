@@ -146,6 +146,10 @@ Site =
           @summary = data
       })
     ).done( =>
+      # Set needed data
+      @todaysHours = Math.round(@summary.total_grand / 1000 / 60 / 60 * 10) / 10
+      @totalHours = Math.round(@details.total_grand / 1000 / 60 / 60 * 10) / 10
+      # Display data
       @displayData()
     ).fail( =>
       $('.loading').removeClass('loading').addClass('error').html '<h1><span class="label label-danger">Error! Wrong credentials!</span></h1>
@@ -164,14 +168,12 @@ Site =
     $vacation = $('.vacation-days-display')
 
     # TOTAL
-    todaysHours = Math.round(@summary.total_grand / 1000 / 60 / 60 * 10) / 10
-    totalHours = Math.round(@details.total_grand / 1000 / 60 / 60 * 10) / 10
-    $total.html totalHours
+    $total.html @totalHours
 
     # CURRENT / yesterday's avg
     # If workDaysWorked calculate avg,
     # else no workDaysWorked (aka first day of the month) just show todays hours
-    currentAvg = if @workDaysWorked then totalHours / @workDaysWorked else totalHours
+    currentAvg = if @workDaysWorked then @totalHours / @workDaysWorked else @totalHours
     currentAvg = Math.round(currentAvg * 10) / 10
     $current.html currentAvg
 
@@ -180,20 +182,20 @@ Site =
 
     # TARGET AVG TOMOROW
     unless @isTheLast
-      targetAvg = Math.round((@targetHrs - totalHours) / @workDaysLeftTomorrow * 10) / 10
+      targetAvg = Math.round((@targetHrs - @totalHours) / @workDaysLeftTomorrow * 10) / 10
     else
       targetAvg = Math.round(@targetHrs / @nmWorkDaysLeftTomorrow * 10) / 10
     $target.html targetAvg
 
     # TARGET AVG TODAY
     unless @isTheFirst
-      targetAvgToday = Math.round((@targetHrs - totalHours + todaysHours) / @workDaysLeft * 10) / 10
+      targetAvgToday = Math.round((@targetHrs - @totalHours + @todaysHours) / @workDaysLeft * 10) / 10
     else
-      targetAvgToday = Math.round((@targetHrs - todaysHours) / @workDaysLeft * 10) / 10
+      targetAvgToday = Math.round((@targetHrs - @todaysHours) / @workDaysLeft * 10) / 10
     $targetAvgToday.html targetAvgToday
 
     # TARGET TODAY
-    targetToday = Math.round((targetAvgToday - todaysHours) * 10) / 10
+    targetToday = Math.round((targetAvgToday - @todaysHours) * 10) / 10
     $targetToday.html targetToday
 
     # CLOCK OUT
