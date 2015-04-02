@@ -186,7 +186,7 @@
       $clockOut = $('.clock-out-display');
       $vacation = $('.vacation-days-display');
       $total.html(this.totalHours);
-      currentAvg = this.workDaysWorked ? this.totalHours / this.workDaysWorked : this.totalHours;
+      currentAvg = this.isTheFirst ? this.totalHours : (this.totalHours - this.todaysHours) / this.workDaysWorked;
       currentAvg = Math.round(currentAvg * 10) / 10;
       $current.html(currentAvg);
       $targetHrs.html(this.targetHrs);
