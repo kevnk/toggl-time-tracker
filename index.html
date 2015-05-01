@@ -8,7 +8,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
-        <link rel="stylesheet" href="assets/vendor/menu_cornermorph.css">
         <link rel="stylesheet" href="assets/styles/main.css">
     </head>
     <body>
@@ -19,113 +18,7 @@
                         <img src="assets/images/loading-bubbles.svg" alt="Loading icon" width="100%"/>
                     </div>
                 </div>
-
-                <div class="menu-wrap">
-                    <div class="menu">
-                        <form>
-                            <div class="button-wrap">
-                                <button class="btn btn-link">Copy Share Url</button>
-                                <button type="submit" class="btn btn-sm btn-primary pull-right">Save</button>
-                            </div>
-                            <div class="form-group">
-                                <label for="earnings">Total Earnings</label>
-                                <input type="number" class="form-control" id="earnings" placeholder="Total Earnings">
-                            </div>
-                            <div class="form-group">
-                                <label for="wage">Hourly Wage</label>
-                                <input type="number" class="form-control" id="wage" placeholder="Hourly Wage">
-                            </div>
-                            <div class="form-group">
-                                <label for="userId">Toggl User ID</label>
-                                <input type="number" class="form-control" id="userId" placeholder="Toggl User ID">
-                            </div>
-                            <div class="form-group">
-                                <label for="workspaceId">Toggl Workspace ID</label>
-                                <input type="number" class="form-control" id="workspaceId" placeholder="Toggl Workspace ID">
-                            </div>
-                            <div class="form-group">
-                                <label for="apiKey">Toggl Auth Key</label>
-                                <input type="text" class="form-control" id="apiKey" placeholder="Toggle Auth Key">
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="row fade">
-                    <button class="menu-button" id="open-button"><i class="glyphicon glyphicon-cog"></i></button>
-                </div>
-
-                <div class="content-wrap">
-                    <div class="content">
-                        <div class="row msg-wrap">
-                            <div id="msg" class="btn btn-success btn-lg fade">Hi! I'm a message box</div>
-                        </div>
-                        <div class="row fade">
-                            <div class="tab-content">
-                                <div id="target_today" class="fade tab-pane active in">
-                                    <div class="display target-today-display"></div>
-                                    <div class="display-label">Hours to meet target today</div>
-                                </div>
-                                <div id="clock_out" class="fade tab-pane">
-                                    <div class="display clock-out-display"></div>
-                                    <div class="display-label">Clock out time <small>(now + hours to meet target today)</small></div>
-                                </div>
-                                <div id="target_avg_today" class="fade tab-pane">
-                                    <div class="display target-avg-today-display"></div>
-                                    <div class="display-label">Today's target to make earnings by EOM</div>
-                                </div>
-                                <div id="target_avg" class="fade tab-pane">
-                                    <div class="display target-avg-display"></div>
-                                    <div class="display-label">Tomorrow's target to make earnings by EOM <small>(If you logged no more time today)</small></div>
-                                </div>
-                                <div id="current_avg" class="fade tab-pane">
-                                    <div class="display current-avg-display"></div>
-                                    <div class="display-label">Average hours/day this month</div>
-                                </div>
-                                <div id="total_hours" class="fade tab-pane">
-                                    <div class="display total-hours-display"></div>
-                                    <div class="display-label">Total hours logged this month</div>
-                                </div>
-                                <div id="target_hours" class="fade tab-pane">
-                                    <div class="display target-hours-display"></div>
-                                    <div class="display-label">Total target hours for the month</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row fade">
-                            <ul class="nav nav-pills">
-                                <li class="active">
-                                    <a href="#target_today" data-toggle="tab">Target Today <span class="badge target-today-display"></span></a>
-                                </li>
-                                <li>
-                                    <a href="#clock_out" data-toggle="tab">Clock Out <span class="badge clock-out-display"></span></a>
-                                </li>
-                                <li>
-                                    <a href="#target_avg_today" data-toggle="tab">Target Today <span class="badge target-avg-today-display"></span></a>
-                                </li>
-                                <li>
-                                    <a href="#target_avg" data-toggle="tab">Target Tomorrow <span class="badge target-avg-display"></span></a>
-                                </li>
-                                <li>
-                                    <a href="#current_avg" data-toggle="tab">Current AVG <span class="badge current-avg-display"></span></a>
-                                </li>
-                                <li>
-                                    <a href="#total_hours" data-toggle="tab">Logged Hours <span class="badge total-hours-display"></span></a>
-                                </li>
-                                <li>
-                                    <a href="#target_hours" data-toggle="tab">Target Hours <span class="badge target-hours-display"></span></a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="row fade" id="holidays">
-                            <div class="display-wrap">Vacation Days This Month: <span class="vacation-days-display"></span></div>
-                            <div class="btn-wrap">
-                                <button id="minus_vacation_day" class="btn btn-default btn-sm">- Vacation Day</button>
-                                <button id="plus_vacation_day" class="btn btn-default btn-sm">+ Vacation Day</button>
-                            </div>
-                            <form></form>
-                        </div>
-                    </div>
-                </div>
+                <div id="content" class="fade"></div>
             </main>
         </div>
 
@@ -134,11 +27,8 @@
         <script src="bower_components/underscore/underscore.js"></script>
         <script src="bower_components/moment/moment.js"></script>
         <script src="bower_components/moment-range/lib/moment-range.min.js"></script>
-        <script src="bower_components/zeroclipboard/dist/ZeroClipboard.min.js"></script>
 
         <script src="assets/scripts/extend-moment.js"></script>
-        <script src="assets/vendor/classie.js"></script>
-        <script src="assets/vendor/menu_cornermorph.js"></script>
         <script src="assets/vendor/moment-holidays.js"></script>
         <script src="assets/scripts/main.js"></script>
 
