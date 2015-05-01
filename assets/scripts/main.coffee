@@ -227,7 +227,7 @@ Site =
 
   addDebug: ->
     return unless location.host is 'localhost'
-
+    console.log('%c DEBUG: Site -->', 'color:#F80', Site)
     @$debug = @$debug || $('body').append('<div id="debug" class="container">').find('#debug')
     _.each @, (item, key) =>
       unless _.isFunction(item)

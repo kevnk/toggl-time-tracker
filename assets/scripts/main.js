@@ -169,6 +169,7 @@
       if (location.host !== 'localhost') {
         return;
       }
+      console.log('%c DEBUG: Site -->', 'color:#F80', Site);
       this.$debug = this.$debug || $('body').append('<div id="debug" class="container">').find('#debug');
       return _.each(this, (function(_this) {
         return function(item, key) {
