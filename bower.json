@@ -21,6 +21,7 @@
     "bootstrap": "~3.3.4",
     "moment": "~2.9.0",
     "zeroclipboard": "~2.2.0",
-    "moment-range": "~1.0.7"
+    "moment-range": "~1.0.7",
+    "slick-carousel": "~1.5.3"
   }
 }

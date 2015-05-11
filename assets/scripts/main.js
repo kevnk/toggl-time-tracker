@@ -141,7 +141,7 @@
       this.slides = [];
       this.addCurrentAvgSlide();
       this.addSlides();
-      this.addPager();
+      this.addSlick();
       this.recalculateValues();
       this.addDebug();
       return this.toggleContent();
@@ -157,12 +157,11 @@
         };
       })(this));
     },
-    addPager: function() {
-      return _.each(this.slides, (function(_this) {
-        return function(slide, i) {
-          return _this.$content.find('#pager').append('<a href="#" data-slide-index="' + i + '">' + i + '</a>');
-        };
-      })(this));
+    addSlick: function() {
+      return $('#slides').slick({
+        dots: true,
+        speed: 500
+      });
     },
     toggleContent: function(show) {
       if (show == null) {
@@ -262,7 +261,6 @@
         return;
       }
       this.$debug = this.$debug || $('body').append('<div id="debug" class="container">').find('#debug');
-      console.clear();
       this.$debug.html('');
       console.log('%c DEBUG: Site -->', 'color:#F80', Site);
       return _.each(this, (function(_this) {

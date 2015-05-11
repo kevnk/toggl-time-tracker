@@ -155,7 +155,7 @@ Site =
     @addCurrentAvgSlide()
 
     @addSlides()
-    @addPager()
+    @addSlick()
     @recalculateValues()
     @addDebug()
     @toggleContent()
@@ -169,9 +169,11 @@ Site =
       @$content.find('#slides').append(slideWrapper)
 
 
-  addPager: ->
-    _.each @slides, (slide, i) =>
-      @$content.find('#pager').append('<a href="#" data-slide-index="' + i + '">' + i + '</a>')
+  addSlick: ->
+    $('#slides').slick({
+      dots: true,
+      speed: 500
+    })
 
 
   toggleContent: (show=true) ->
@@ -326,7 +328,6 @@ Site =
     return unless location.host is 'localhost'
     @$debug = @$debug || $('body').append('<div id="debug" class="container">').find('#debug')
 
-    console.clear()
     @$debug.html('')
 
     console.log('%c DEBUG: Site -->', 'color:#F80', Site)
