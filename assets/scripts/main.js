@@ -158,9 +158,16 @@
       })(this));
     },
     addSlick: function() {
-      return $('#slides').slick({
+      this.lastSlickIndex = localStorage.getItem('lastSlickIndex') || 0;
+      this.$slides = $('#slides').slick({
         dots: true,
-        speed: 500
+        speed: 500,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        infinite: true
+      }).slick('slickGoTo', this.lastSlickIndex, true);
+      return this.$slides.on('afterChange', function(event, slick, currentSlide) {
+        return localStorage.setItem('lastSlickIndex', currentSlide);
       });
     },
     toggleContent: function(show) {

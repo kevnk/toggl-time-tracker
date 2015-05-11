@@ -170,10 +170,16 @@ Site =
 
 
   addSlick: ->
-    $('#slides').slick({
+    @lastSlickIndex = localStorage.getItem('lastSlickIndex') || 0
+    @$slides = $('#slides').slick({
       dots: true,
-      speed: 500
-    })
+      speed: 500,
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      infinite: true
+    }).slick('slickGoTo', @lastSlickIndex, true)
+    @$slides.on 'afterChange', (event, slick, currentSlide) ->
+      localStorage.setItem('lastSlickIndex', currentSlide)
 
 
   toggleContent: (show=true) ->
@@ -201,6 +207,7 @@ Site =
     slide.append range
     slide.append $('<h2 data-targetAvg>')
 
+    @slides.push slide
     @slides.push slide
 
 
