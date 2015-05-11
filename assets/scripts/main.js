@@ -44,7 +44,7 @@
       this.savedVacations = localStorage.getItem('vacations') ? localStorage.getItem('vacations').split(',') : [];
       this.holidays = [];
       this.holidaysByName = {};
-      return moment().range(this.bom._d, this.eom._d).by('days', (function(_this) {
+      moment().range(this.bom._d, this.eom._d).by('days', (function(_this) {
         return function(moment) {
           var holiday, holidayObj;
           if (!moment.isWeekDay()) {
@@ -62,8 +62,30 @@
           }
         };
       })(this));
+      return this.lastTargetHours = localStorage.getItem('lastTargetHours') || 140;
     },
-    setCalculatedVariables: function() {},
+    calculateVariables: function() {
+      this.todaysHours = Math.round(this.summary.total_grand / 1000 / 60 / 60 * 10) / 10;
+      this.totalHours = Math.round(this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
+      this.isWorkDay = this.isWeekday;
+      this.workDaysTotal = this.bom.weekDays(this.eom);
+      this.workDaysWorked = this.bom.weekDays(this.today);
+      if (this.isWorkDay) {
+        this.workDaysWorked--;
+      }
+      this.workDaysLeft = this.workDaysTotal - this.workDaysWorked;
+      this.todayAvg = Math.round(this.totalHours / this.workDaysWorked * 100) / 100;
+      this.yesterdayAvg = this.todayAvg;
+      if (this.isWorkDay) {
+        this.yesterdayAvg = Math.round((this.totalHours - this.todaysHours) / (this.workDaysWorked - 1) * 100) / 100;
+      }
+      this.avgPercentageChange = Math.round((this.todayAvg - this.yesterdayAvg) / this.yesterdayAvg * 100) / 100;
+      this.targetHours = this.targetHours || this.lastTargetHours;
+      this.targetAvg = Math.round(this.targetHours / this.workDaysTotal * 100) / 100;
+      this.hoursTodayToTargetAvg = Math.round(((this.targetAvg * this.workDaysWorked) - this.totalHours) * 100) / 100;
+      this.totalHoursTodayToTargetAvg = this.hoursTodayToTargetAvg + this.todaysHours;
+      this.percentageTodayToTargetAvg = Math.round(this.todaysHours / this.totalHoursTodayToTargetAvg * 100);
+    },
     getData: function() {
       var qSince, qToday, qUntil, that;
       qSince = this.bom.format('YYYY-MM-DD');
@@ -106,8 +128,7 @@
         })(this)
       })).done((function(_this) {
         return function() {
-          _this.todaysHours = Math.round(_this.summary.total_grand / 1000 / 60 / 60 * 10) / 10;
-          _this.totalHours = Math.round(_this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
+          _this.calculateVariables();
           return _this.displayData();
         };
       })(this)).fail((function(_this) {
@@ -117,8 +138,31 @@
       })(this));
     },
     displayData: function() {
+      this.slides = [];
+      this.addCurrentAvgSlide();
+      this.addSlides();
+      this.addPager();
+      this.recalculateValues();
       this.addDebug();
       return this.toggleContent();
+    },
+    addSlides: function() {
+      this.$content.html('<div id="slides"/><div id="pager"/>');
+      return _.each(this.slides, (function(_this) {
+        return function(slide, i) {
+          var slideWrapper;
+          slideWrapper = $('<div id="slide-' + i + '"/>');
+          slideWrapper.append(slide);
+          return _this.$content.find('#slides').append(slideWrapper);
+        };
+      })(this));
+    },
+    addPager: function() {
+      return _.each(this.slides, (function(_this) {
+        return function(slide, i) {
+          return _this.$content.find('#pager').append('<a href="#" data-slide-index="' + i + '">' + i + '</a>');
+        };
+      })(this));
     },
     toggleContent: function(show) {
       if (show == null) {
@@ -131,6 +175,54 @@
         this.$loader.removeClass('fade');
         return this.$content.addClass('fade');
       }
+    },
+    addCurrentAvgSlide: function() {
+      var label, range, slide;
+      slide = $('<div id="current_avg_slide"/>');
+      label = $('<label for=target_hours data-targetHours>');
+      range = $('<input type=range id=target_hours min=100 value=' + this.targetHours + ' max=200 step=1>');
+      range.on('input', (function(_this) {
+        return function() {
+          _this.targetHours = range.val();
+          return _this.recalculateValues();
+        };
+      })(this));
+      slide.append($('<h1>').html('Current Average'));
+      slide.append($('<h2 data-todayAvg>'));
+      slide.append($('<small data-hoursTodayToTargetAvg/>'));
+      slide.append(label);
+      slide.append(range);
+      slide.append($('<h2 data-targetAvg>'));
+      return this.slides.push(slide);
+    },
+    recalculateValues: function() {
+      var $avgPercentageChange, $hoursTodayToTargetAvg, $todayAvg;
+      this.lastTargetHours = this.targetHours;
+      localStorage.setItem('lastTargetHours', this.lastTargetHours);
+      this.calculateVariables();
+      $todayAvg = $('[data-todayAvg');
+      $todayAvg.html(this.todayAvg);
+      if (this.todayAvg > this.targetAvg) {
+        $todayAvg.removeClass('negative');
+      } else {
+        $todayAvg.addClass('negative');
+      }
+      $('[data-targetHours]').html(this.targetHours);
+      $avgPercentageChange = $('[data-avgPercentageChange]');
+      $avgPercentageChange.html(this.avgPercentageChange + '%');
+      if (this.avgPercentageChange >= 0) {
+        $avgPercentageChange.removeClass('negative');
+      } else {
+        $avgPercentageChange.addClass('negative');
+      }
+      $hoursTodayToTargetAvg = $('[data-hoursTodayToTargetAvg]');
+      $hoursTodayToTargetAvg.html(this.hoursTodayToTargetAvg);
+      if (this.hoursTodayToTargetAvg <= 0) {
+        $hoursTodayToTargetAvg.removeClass('negative');
+      } else {
+        $hoursTodayToTargetAvg.addClass('negative');
+      }
+      return $('[data-targetAvg]').html(this.targetAvg);
     },
     attachVacationsDays: function() {},
     storeVacationDays: function() {},
@@ -169,13 +261,19 @@
       if (location.host !== 'localhost') {
         return;
       }
-      console.log('%c DEBUG: Site -->', 'color:#F80', Site);
       this.$debug = this.$debug || $('body').append('<div id="debug" class="container">').find('#debug');
+      console.clear();
+      this.$debug.html('');
+      console.log('%c DEBUG: Site -->', 'color:#F80', Site);
       return _.each(this, (function(_this) {
         return function(item, key) {
           if (!_.isFunction(item)) {
             if (_.isObject(item)) {
-              return console.log('%c DEBUG: ' + key + ' -->', 'color:#F80', item);
+              if (item._isAMomentObject) {
+                return _this.$debug.append('<strong>' + key + ' (Moment):</strong> ' + item.format('MM/DD/YYYY hh:mm:ssa') + '<br>');
+              } else {
+                return console.log('%c DEBUG: ' + key + ' -->', 'color:#F80', item);
+              }
             } else {
               return _this.$debug.append('<strong>' + key + ':</strong> ' + item + '<br>');
             }

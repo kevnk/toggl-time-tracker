@@ -7,7 +7,6 @@ Site =
     if location.search
       document.location = location.origin + location.pathname
 
-    # @setCalculatedVariables()
     # @attachVacationsDays()
     @getData()
     @attachAutoRefresh()
@@ -63,8 +62,13 @@ Site =
         @holidays.push holidayObj
         @holidaysByName[holiday] = holidayObj
 
+    @lastTargetHours = localStorage.getItem('lastTargetHours') || 140
 
-  setCalculatedVariables: ->
+
+  calculateVariables: ->
+    @todaysHours = Math.round(@summary.total_grand / 1000 / 60 / 60 * 10) / 10
+    @totalHours = Math.round(@details.total_grand / 1000 / 60 / 60 * 10) / 10
+
     # # Vacations
     # @isVacationDay = _.some _.filter @savedVacations, (vacation) =>
     #   if @holidaysByName[vacation]
@@ -80,12 +84,28 @@ Site =
 
     # @vacationDaysSpent = _.size(@savedVacations) - @vacationDaysRemaining
 
-    # @isWorkDay = @isWeekday and not @isVacationDay
+    @isWorkDay = @isWeekday # and not @isVacationDay
 
-    # @workDaysTotal = @bom.weekDays( @eom ) + 1
-    # @workDaysWorked = @bom.weekDays( @today ) - @vacationDaysSpent
-    # @workDaysLeft = @workDaysTotal - @workDaysWorked - @vacationDaysRemaining
+    @workDaysTotal = @bom.weekDays( @eom )
+    @workDaysWorked = @bom.weekDays( @today ) # - @vacationDaysSpent
+    @workDaysWorked-- if @isWorkDay
+    @workDaysLeft = @workDaysTotal - @workDaysWorked # - @vacationDaysRemaining
     # @workDaysLeftTomorrow = if @isWorkDay then @workDaysLeft - 1 else @workDaysLeft
+
+    @todayAvg = Math.round( @totalHours / @workDaysWorked * 100 ) / 100
+    @yesterdayAvg = @todayAvg
+    if @isWorkDay
+      @yesterdayAvg = Math.round( (@totalHours - @todaysHours) / (@workDaysWorked - 1) * 100 ) / 100
+
+    @avgPercentageChange = Math.round( (@todayAvg - @yesterdayAvg) / @yesterdayAvg * 100 ) / 100
+
+    @targetHours = @targetHours || @lastTargetHours
+    @targetAvg = Math.round( @targetHours / @workDaysTotal * 100 ) / 100
+
+    @hoursTodayToTargetAvg = Math.round( ((@targetAvg * @workDaysWorked) - @totalHours) * 100 ) / 100
+    @totalHoursTodayToTargetAvg = @hoursTodayToTargetAvg + @todaysHours
+    @percentageTodayToTargetAvg = Math.round( @todaysHours / @totalHoursTodayToTargetAvg * 100 )
+
     return
 
 
@@ -122,8 +142,7 @@ Site =
       })
     ).done( =>
       # Set needed data
-      @todaysHours = Math.round(@summary.total_grand / 1000 / 60 / 60 * 10) / 10
-      @totalHours = Math.round(@details.total_grand / 1000 / 60 / 60 * 10) / 10
+      @calculateVariables()
       # Display data
       @displayData()
     ).fail( =>
@@ -132,8 +151,28 @@ Site =
 
 
   displayData: ->
+    @slides = []
+    @addCurrentAvgSlide()
+
+    @addSlides()
+    @addPager()
+    @recalculateValues()
     @addDebug()
     @toggleContent()
+
+
+  addSlides: ->
+    @$content.html('<div id="slides"/><div id="pager"/>')
+    _.each @slides, (slide, i) =>
+      slideWrapper = $('<div id="slide-' + i + '"/>')
+      slideWrapper.append(slide)
+      @$content.find('#slides').append(slideWrapper)
+
+
+  addPager: ->
+    _.each @slides, (slide, i) =>
+      @$content.find('#pager').append('<a href="#" data-slide-index="' + i + '">' + i + '</a>')
+
 
   toggleContent: (show=true) ->
     if show
@@ -142,6 +181,64 @@ Site =
     else
       @$loader.removeClass('fade')
       @$content.addClass('fade')
+
+
+  addCurrentAvgSlide: ->
+    slide = $('<div id="current_avg_slide"/>')
+
+    label = $('<label for=target_hours data-targetHours>')
+    range = $('<input type=range id=target_hours min=100 value=' + @targetHours + ' max=200 step=1>')
+    range.on 'input', =>
+      @targetHours = range.val()
+      @recalculateValues()
+
+    slide.append $('<h1>').html('Current Average')
+    slide.append $('<h2 data-todayAvg>')
+    slide.append $('<small data-hoursTodayToTargetAvg/>')
+    slide.append label
+    slide.append range
+    slide.append $('<h2 data-targetAvg>')
+
+    @slides.push slide
+
+
+  recalculateValues: ->
+    @lastTargetHours = @targetHours
+    localStorage.setItem('lastTargetHours', @lastTargetHours)
+
+    # RECALCULATE
+    @calculateVariables()
+
+    # todayAvg
+    $todayAvg = $('[data-todayAvg')
+    $todayAvg.html @todayAvg
+    if @todayAvg > @targetAvg
+      $todayAvg.removeClass('negative')
+    else
+      $todayAvg.addClass('negative')
+
+    # targetHours
+    $('[data-targetHours]').html @targetHours
+
+    # avgPercentageChange
+    $avgPercentageChange = $('[data-avgPercentageChange]')
+    $avgPercentageChange.html @avgPercentageChange + '%'
+    if @avgPercentageChange >= 0
+      $avgPercentageChange.removeClass('negative')
+    else
+      $avgPercentageChange.addClass('negative')
+
+    # hoursTodayToTargetAvg
+    $hoursTodayToTargetAvg = $('[data-hoursTodayToTargetAvg]')
+    $hoursTodayToTargetAvg.html @hoursTodayToTargetAvg
+    if @hoursTodayToTargetAvg <= 0
+      $hoursTodayToTargetAvg.removeClass('negative')
+    else
+      $hoursTodayToTargetAvg.addClass('negative')
+
+    # targetAvg
+    $('[data-targetAvg]').html @targetAvg
+
 
   attachVacationsDays: ->
     # _.each @holidays, (holiday) =>
@@ -155,7 +252,7 @@ Site =
 
     # @$holidays.find('input').on 'change', =>
     #   @storeVacationDays()
-    #   @setCalculatedVariables()
+    #   @calculateVariables()
     #   @displayData()
 
     # # Manually add/subtract vacation days
@@ -176,14 +273,14 @@ Site =
     #   addManualVacationInput()
     #   $minusBtn.removeClass('hide')
     #   @storeVacationDays()
-    #   @setCalculatedVariables()
+    #   @calculateVariables()
     #   @displayData()
 
     # $minusBtn.on 'click', (e) =>
     #   $minusBtn.addClass('hide') unless form.find('.checkbox.hide').size() >= 2
     #   form.find('.checkbox.hide').first().remove()
     #   @storeVacationDays()
-    #   @setCalculatedVariables()
+    #   @calculateVariables()
     #   @displayData()
 
     # $minusBtn.addClass('hide') if form.find('.checkbox.hide').size() < 1
@@ -227,12 +324,20 @@ Site =
 
   addDebug: ->
     return unless location.host is 'localhost'
-    console.log('%c DEBUG: Site -->', 'color:#F80', Site)
     @$debug = @$debug || $('body').append('<div id="debug" class="container">').find('#debug')
+
+    console.clear()
+    @$debug.html('')
+
+    console.log('%c DEBUG: Site -->', 'color:#F80', Site)
     _.each @, (item, key) =>
       unless _.isFunction(item)
         if _.isObject(item)
-          console.log('%c DEBUG: ' + key + ' -->', 'color:#F80', item)
+          if item._isAMomentObject
+            # console.log('%c DEBUG: ' + key + ' -->', 'color:#F80', item)
+            @$debug.append '<strong>' + key + ' (Moment):</strong> ' + item.format('MM/DD/YYYY hh:mm:ssa') + '<br>'
+          else
+            console.log('%c DEBUG: ' + key + ' -->', 'color:#F80', item)
         else
           @$debug.append '<strong>' + key + ':</strong> ' + item + '<br>'
 
