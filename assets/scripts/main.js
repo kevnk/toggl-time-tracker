@@ -83,7 +83,7 @@
       this.targetHours = this.targetHours || this.lastTargetHours;
       this.targetAvg = Math.round(this.targetHours / this.workDaysTotal * 100) / 100;
       this.hoursTodayToTargetAvg = Math.round(((this.targetAvg * this.workDaysWorked) - this.totalHours) * 100) / 100;
-      this.totalHoursTodayToTargetAvg = this.hoursTodayToTargetAvg + this.todaysHours;
+      this.totalHoursTodayToTargetAvg = Math.round((this.hoursTodayToTargetAvg + this.todaysHours) * 100) / 100;
       this.percentageTodayToTargetAvg = Math.round(this.todaysHours / this.totalHoursTodayToTargetAvg * 100);
     },
     getData: function() {
@@ -139,14 +139,32 @@
     },
     displayData: function() {
       this.slides = [];
-      this.addCurrentAvgSlide();
-      this.addSlides();
-      this.addSlick();
+      this.addTargetSlide();
+      this.addSlidesToContent();
+      this.addSlickCarousel();
       this.recalculateValues();
       this.addDebug();
       return this.toggleContent();
     },
-    addSlides: function() {
+    addTargetSlide: function() {
+      var label, range, slide, slideInner, slideOuter;
+      slide = $('<div id="target_slide"/>');
+      label = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>').append('<span data-targetHours>');
+      range = $('<input type=range id=target_hours min=100 value=' + this.targetHours + ' max=200 step=1>');
+      range.on('input', (function(_this) {
+        return function() {
+          _this.targetHours = range.val();
+          return _this.recalculateValues();
+        };
+      })(this));
+      slideOuter = $('<div/>').append('<strong data-targetAvg>').append('<span>target avg</span>');
+      slideInner = $('<div data-percentageTodayToTargetAvg=width>').append('<strong data-hoursTodayToTargetAvg>').append('<span>hours left</span>');
+      slide.append(slideOuter.append(slideInner));
+      slide.append(label);
+      slide.append(range);
+      return this.slides.push(slide);
+    },
+    addSlidesToContent: function() {
       this.$content.html('<div id="slides"/><div id="pager"/>');
       return _.each(this.slides, (function(_this) {
         return function(slide, i) {
@@ -157,7 +175,7 @@
         };
       })(this));
     },
-    addSlick: function() {
+    addSlickCarousel: function() {
       this.lastSlickIndex = localStorage.getItem('lastSlickIndex') || 0;
       this.$slides = $('#slides').slick({
         dots: true,
@@ -182,53 +200,28 @@
         return this.$content.addClass('fade');
       }
     },
-    addCurrentAvgSlide: function() {
-      var label, range, slide;
-      slide = $('<div id="current_avg_slide"/>');
-      label = $('<label for=target_hours data-targetHours>');
-      range = $('<input type=range id=target_hours min=100 value=' + this.targetHours + ' max=200 step=1>');
-      range.on('input', (function(_this) {
-        return function() {
-          _this.targetHours = range.val();
-          return _this.recalculateValues();
-        };
-      })(this));
-      slide.append($('<h1>').html('Current Average'));
-      slide.append($('<h2 data-todayAvg>'));
-      slide.append($('<small data-hoursTodayToTargetAvg/>'));
-      slide.append(label);
-      slide.append(range);
-      slide.append($('<h2 data-targetAvg>'));
-      return this.slides.push(slide);
-    },
     recalculateValues: function() {
-      var $avgPercentageChange, $hoursTodayToTargetAvg, $todayAvg;
+      var boundVariables;
       this.lastTargetHours = this.targetHours;
       localStorage.setItem('lastTargetHours', this.lastTargetHours);
       this.calculateVariables();
-      $todayAvg = $('[data-todayAvg');
-      $todayAvg.html(this.todayAvg);
-      if (this.todayAvg > this.targetAvg) {
-        $todayAvg.removeClass('negative');
-      } else {
-        $todayAvg.addClass('negative');
-      }
-      $('[data-targetHours]').html(this.targetHours);
-      $avgPercentageChange = $('[data-avgPercentageChange]');
-      $avgPercentageChange.html(this.avgPercentageChange + '%');
-      if (this.avgPercentageChange >= 0) {
-        $avgPercentageChange.removeClass('negative');
-      } else {
-        $avgPercentageChange.addClass('negative');
-      }
-      $hoursTodayToTargetAvg = $('[data-hoursTodayToTargetAvg]');
-      $hoursTodayToTargetAvg.html(this.hoursTodayToTargetAvg);
-      if (this.hoursTodayToTargetAvg <= 0) {
-        $hoursTodayToTargetAvg.removeClass('negative');
-      } else {
-        $hoursTodayToTargetAvg.addClass('negative');
-      }
-      return $('[data-targetAvg]').html(this.targetAvg);
+      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'targetAvg'];
+      return _.each(boundVariables, (function(_this) {
+        return function(variable) {
+          return $('[data-' + variable + ']').each(function(i, el) {
+            var $el, method, val;
+            $el = $(el);
+            method = $el.attr('data-' + variable) || 'html';
+            if ($el[method] && _this[variable]) {
+              val = _this[variable];
+              if (method === 'width') {
+                val += '%';
+              }
+              return $el[method](val);
+            }
+          });
+        };
+      })(this));
     },
     attachVacationsDays: function() {},
     storeVacationDays: function() {},

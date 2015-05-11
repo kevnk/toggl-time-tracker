@@ -103,7 +103,7 @@ Site =
     @targetAvg = Math.round( @targetHours / @workDaysTotal * 100 ) / 100
 
     @hoursTodayToTargetAvg = Math.round( ((@targetAvg * @workDaysWorked) - @totalHours) * 100 ) / 100
-    @totalHoursTodayToTargetAvg = @hoursTodayToTargetAvg + @todaysHours
+    @totalHoursTodayToTargetAvg = Math.round( (@hoursTodayToTargetAvg + @todaysHours) * 100 ) / 100
     @percentageTodayToTargetAvg = Math.round( @todaysHours / @totalHoursTodayToTargetAvg * 100 )
 
     return
@@ -152,16 +152,41 @@ Site =
 
   displayData: ->
     @slides = []
-    @addCurrentAvgSlide()
+    @addTargetSlide()
 
-    @addSlides()
-    @addSlick()
+    @addSlidesToContent()
+    @addSlickCarousel()
     @recalculateValues()
     @addDebug()
     @toggleContent()
 
 
-  addSlides: ->
+  addTargetSlide: ->
+    slide = $('<div id="target_slide"/>')
+
+    label = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>')
+      .append('<span data-targetHours>')
+    range = $('<input type=range id=target_hours min=100 value=' + @targetHours + ' max=200 step=1>')
+    range.on 'input', =>
+      @targetHours = range.val()
+      @recalculateValues()
+
+
+    slideOuter = $('<div/>')
+      .append('<strong data-targetAvg>')
+      .append('<span>target avg</span>')
+    slideInner = $('<div data-percentageTodayToTargetAvg=width>')
+      .append('<strong data-hoursTodayToTargetAvg>')
+      .append('<span>hours left</span>')
+    slide.append(slideOuter.append(slideInner))
+
+    slide.append label
+    slide.append range
+
+    @slides.push slide
+
+
+  addSlidesToContent: ->
     @$content.html('<div id="slides"/><div id="pager"/>')
     _.each @slides, (slide, i) =>
       slideWrapper = $('<div id="slide-' + i + '"/>')
@@ -169,7 +194,7 @@ Site =
       @$content.find('#slides').append(slideWrapper)
 
 
-  addSlick: ->
+  addSlickCarousel: ->
     @lastSlickIndex = localStorage.getItem('lastSlickIndex') || 0
     @$slides = $('#slides').slick({
       dots: true,
@@ -191,26 +216,6 @@ Site =
       @$content.addClass('fade')
 
 
-  addCurrentAvgSlide: ->
-    slide = $('<div id="current_avg_slide"/>')
-
-    label = $('<label for=target_hours data-targetHours>')
-    range = $('<input type=range id=target_hours min=100 value=' + @targetHours + ' max=200 step=1>')
-    range.on 'input', =>
-      @targetHours = range.val()
-      @recalculateValues()
-
-    slide.append $('<h1>').html('Current Average')
-    slide.append $('<h2 data-todayAvg>')
-    slide.append $('<small data-hoursTodayToTargetAvg/>')
-    slide.append label
-    slide.append range
-    slide.append $('<h2 data-targetAvg>')
-
-    @slides.push slide
-    @slides.push slide
-
-
   recalculateValues: ->
     @lastTargetHours = @targetHours
     localStorage.setItem('lastTargetHours', @lastTargetHours)
@@ -218,35 +223,22 @@ Site =
     # RECALCULATE
     @calculateVariables()
 
-    # todayAvg
-    $todayAvg = $('[data-todayAvg')
-    $todayAvg.html @todayAvg
-    if @todayAvg > @targetAvg
-      $todayAvg.removeClass('negative')
-    else
-      $todayAvg.addClass('negative')
+    boundVariables = [
+      'percentageTodayToTargetAvg'
+      'hoursTodayToTargetAvg'
+      'totalHoursTodayToTargetAvg'
+      'targetHours'
+      'targetAvg'
+    ]
 
-    # targetHours
-    $('[data-targetHours]').html @targetHours
-
-    # avgPercentageChange
-    $avgPercentageChange = $('[data-avgPercentageChange]')
-    $avgPercentageChange.html @avgPercentageChange + '%'
-    if @avgPercentageChange >= 0
-      $avgPercentageChange.removeClass('negative')
-    else
-      $avgPercentageChange.addClass('negative')
-
-    # hoursTodayToTargetAvg
-    $hoursTodayToTargetAvg = $('[data-hoursTodayToTargetAvg]')
-    $hoursTodayToTargetAvg.html @hoursTodayToTargetAvg
-    if @hoursTodayToTargetAvg <= 0
-      $hoursTodayToTargetAvg.removeClass('negative')
-    else
-      $hoursTodayToTargetAvg.addClass('negative')
-
-    # targetAvg
-    $('[data-targetAvg]').html @targetAvg
+    _.each boundVariables, (variable) =>
+      $('[data-' + variable + ']').each (i, el) =>
+        $el = $(el)
+        method = $el.attr('data-' + variable) || 'html'
+        if $el[method] and @[variable]
+          val = @[variable]
+          val += '%' if method is 'width'
+          $el[method] val
 
 
   attachVacationsDays: ->

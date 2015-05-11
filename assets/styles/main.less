@@ -1,0 +1,57 @@
+html, body {
+  background: #fafafa;
+}
+
+#debug {
+  white-space: pre;
+}
+
+main {
+  padding-top: 20px;
+  position: relative;
+}
+
+.loading {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  position: absolute;
+}
+
+#target_slide {
+  div {
+    color: #FFF;
+    position: relative;
+    background: #5E88BF;
+    height: 100px;
+    font-size: 20px;
+    line-height: 20px;
+    strong {
+      position: absolute;
+      top: 50%;
+      margin-top: -20px;
+      right: 10px;
+    }
+    span {
+      font-size: 15px;
+      position: absolute;
+      top: 50%;
+      margin-top: 5px;
+      right: 10px;
+    }
+    div {
+      position: relative;
+      background: #4D78B0;
+      transition: width 500ms ease-out;
+    }
+  }
+  label {
+    display: block;
+    margin-top: 20px;
+    color: #999;
+    span {
+      color: #222;
+    }
+  }
+}
