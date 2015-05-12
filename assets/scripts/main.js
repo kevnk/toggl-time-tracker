@@ -65,8 +65,6 @@
       return this.lastTargetHours = localStorage.getItem('lastTargetHours') || 140;
     },
     calculateVariables: function() {
-      this.todaysHours = Math.round(this.summary.total_grand / 1000 / 60 / 60 * 10) / 10;
-      this.totalHours = Math.round(this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
       this.isWorkDay = this.isWeekday;
       this.workDaysTotal = this.bom.weekDays(this.eom);
       this.workDaysWorked = this.bom.weekDays(this.today);
@@ -128,6 +126,8 @@
         })(this)
       })).done((function(_this) {
         return function() {
+          _this.todaysHours = Math.round(_this.summary.total_grand / 1000 / 60 / 60 * 10) / 10;
+          _this.totalHours = Math.round(_this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
           _this.calculateVariables();
           return _this.displayData();
         };
@@ -205,6 +205,7 @@
       this.lastTargetHours = this.targetHours;
       localStorage.setItem('lastTargetHours', this.lastTargetHours);
       this.calculateVariables();
+      this.addDebug();
       boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'targetAvg'];
       return _.each(boundVariables, (function(_this) {
         return function(variable) {
@@ -259,6 +260,9 @@
     addDebug: function() {
       if (location.host !== 'localhost') {
         return;
+      }
+      if (this.$debug) {
+        console.clear();
       }
       this.$debug = this.$debug || $('body').append('<div id="debug" class="container">').find('#debug');
       this.$debug.html('');

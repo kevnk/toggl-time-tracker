@@ -66,9 +66,6 @@ Site =
 
 
   calculateVariables: ->
-    @todaysHours = Math.round(@summary.total_grand / 1000 / 60 / 60 * 10) / 10
-    @totalHours = Math.round(@details.total_grand / 1000 / 60 / 60 * 10) / 10
-
     # # Vacations
     # @isVacationDay = _.some _.filter @savedVacations, (vacation) =>
     #   if @holidaysByName[vacation]
@@ -142,6 +139,9 @@ Site =
       })
     ).done( =>
       # Set needed data
+      @todaysHours = Math.round(@summary.total_grand / 1000 / 60 / 60 * 10) / 10
+      @totalHours = Math.round(@details.total_grand / 1000 / 60 / 60 * 10) / 10
+
       @calculateVariables()
       # Display data
       @displayData()
@@ -222,6 +222,7 @@ Site =
 
     # RECALCULATE
     @calculateVariables()
+    @addDebug()
 
     boundVariables = [
       'percentageTodayToTargetAvg'
@@ -325,8 +326,8 @@ Site =
 
   addDebug: ->
     return unless location.host is 'localhost'
+    console.clear() if @$debug
     @$debug = @$debug || $('body').append('<div id="debug" class="container">').find('#debug')
-
     @$debug.html('')
 
     console.log('%c DEBUG: Site -->', 'color:#F80', Site)
