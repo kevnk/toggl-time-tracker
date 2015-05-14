@@ -103,6 +103,8 @@ Site =
     @totalHoursTodayToTargetAvg = Math.round( (@hoursTodayToTargetAvg + @todaysHours) * 100 ) / 100
     @percentageTodayToTargetAvg = Math.round( @todaysHours / @totalHoursTodayToTargetAvg * 100 )
 
+    @percentageTodayAvg = Math.round( @todayAvg / @targetAvg * 100 )
+
     return
 
 
@@ -175,10 +177,13 @@ Site =
     slideOuter = $('<div/>')
       .append('<strong data-targetAvg>')
       .append('<span>target avg</span>')
-    slideInner = $('<div data-percentageTodayToTargetAvg=width>')
+    slideInner1 = $('<div data-percentageTodayAvg=width>')
+      .append('<strong data-todayAvg>')
+      .append('<span>current avg</span>')
+    slideInner2 = $('<div data-percentageTodayToTargetAvg=width>')
       .append('<strong data-hoursTodayToTargetAvg>')
       .append('<span>hours left</span>')
-    slide.append(slideOuter.append(slideInner))
+    slide.append(slideOuter.append(slideInner1).append(slideInner2))
 
     slide.append label
     slide.append range
@@ -230,6 +235,8 @@ Site =
       'totalHoursTodayToTargetAvg'
       'targetHours'
       'targetAvg'
+      'todayAvg'
+      'percentageTodayAvg'
     ]
 
     _.each boundVariables, (variable) =>

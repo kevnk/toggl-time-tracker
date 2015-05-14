@@ -39,9 +39,13 @@ main {
 }
 #target_slide div div {
   position: relative;
-  background: #4D78B0;
+  background: rgba(77, 120, 176, 0.5);
   transition: width 500ms ease-out;
   min-width: 85px;
+}
+#target_slide div div + div {
+  top: -100px;
+  background: #4D78B0;
 }
 #target_slide label {
   display: block;

@@ -42,9 +42,13 @@ main {
     }
     div {
       position: relative;
-      background: #4D78B0;
+      background: fade(#4D78B0, 50%);
       transition: width 500ms ease-out;
       min-width: 85px;
+    }
+    div + div {
+      top: -100px;
+      background: #4D78B0;
     }
   }
   label {

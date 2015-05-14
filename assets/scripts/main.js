@@ -83,6 +83,7 @@
       this.hoursTodayToTargetAvg = Math.round(((this.targetAvg * this.workDaysWorked) - this.totalHours) * 100) / 100;
       this.totalHoursTodayToTargetAvg = Math.round((this.hoursTodayToTargetAvg + this.todaysHours) * 100) / 100;
       this.percentageTodayToTargetAvg = Math.round(this.todaysHours / this.totalHoursTodayToTargetAvg * 100);
+      this.percentageTodayAvg = Math.round(this.todayAvg / this.targetAvg * 100);
     },
     getData: function() {
       var qSince, qToday, qUntil, that;
@@ -147,7 +148,7 @@
       return this.toggleContent();
     },
     addTargetSlide: function() {
-      var label, range, slide, slideInner, slideOuter;
+      var label, range, slide, slideInner1, slideInner2, slideOuter;
       slide = $('<div id="target_slide"/>');
       label = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>').append('<span data-targetHours>');
       range = $('<input type=range id=target_hours min=100 value=' + this.targetHours + ' max=200 step=1>');
@@ -158,8 +159,9 @@
         };
       })(this));
       slideOuter = $('<div/>').append('<strong data-targetAvg>').append('<span>target avg</span>');
-      slideInner = $('<div data-percentageTodayToTargetAvg=width>').append('<strong data-hoursTodayToTargetAvg>').append('<span>hours left</span>');
-      slide.append(slideOuter.append(slideInner));
+      slideInner1 = $('<div data-percentageTodayAvg=width>').append('<strong data-todayAvg>').append('<span>current avg</span>');
+      slideInner2 = $('<div data-percentageTodayToTargetAvg=width>').append('<strong data-hoursTodayToTargetAvg>').append('<span>hours left</span>');
+      slide.append(slideOuter.append(slideInner1).append(slideInner2));
       slide.append(label);
       slide.append(range);
       return this.slides.push(slide);
@@ -206,7 +208,7 @@
       localStorage.setItem('lastTargetHours', this.lastTargetHours);
       this.calculateVariables();
       this.addDebug();
-      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'targetAvg'];
+      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'targetAvg', 'todayAvg', 'percentageTodayAvg'];
       return _.each(boundVariables, (function(_this) {
         return function(variable) {
           return $('[data-' + variable + ']').each(function(i, el) {
