@@ -85,7 +85,7 @@ Site =
 
     @workDaysTotal = @bom.weekDays( @eom )
     @workDaysWorked = @bom.weekDays( @today ) # - @vacationDaysSpent
-    @workDaysWorked-- if @isWorkDay
+    @workDaysWorked++ if @isWorkDay
     @workDaysLeft = @workDaysTotal - @workDaysWorked # - @vacationDaysRemaining
     # @workDaysLeftTomorrow = if @isWorkDay then @workDaysLeft - 1 else @workDaysLeft
 
@@ -326,7 +326,7 @@ Site =
 
   addDebug: ->
     return unless location.host is 'localhost'
-    console.clear() if @$debug
+    # console.clear() if @$debug
     @$debug = @$debug || $('body').append('<div id="debug" class="container">').find('#debug')
     @$debug.html('')
 

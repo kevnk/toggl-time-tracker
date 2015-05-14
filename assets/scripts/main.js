@@ -69,7 +69,7 @@
       this.workDaysTotal = this.bom.weekDays(this.eom);
       this.workDaysWorked = this.bom.weekDays(this.today);
       if (this.isWorkDay) {
-        this.workDaysWorked--;
+        this.workDaysWorked++;
       }
       this.workDaysLeft = this.workDaysTotal - this.workDaysWorked;
       this.todayAvg = Math.round(this.totalHours / this.workDaysWorked * 100) / 100;
@@ -260,9 +260,6 @@
     addDebug: function() {
       if (location.host !== 'localhost') {
         return;
-      }
-      if (this.$debug) {
-        console.clear();
       }
       this.$debug = this.$debug || $('body').append('<div id="debug" class="container">').find('#debug');
       this.$debug.html('');
