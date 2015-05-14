@@ -77,7 +77,7 @@
       if (this.isWorkDay) {
         this.yesterdayAvg = Math.round((this.totalHours - this.todaysHours) / (this.workDaysWorked - 1) * 100) / 100;
       }
-      this.avgPercentageChange = Math.round((this.todayAvg - this.yesterdayAvg) / this.yesterdayAvg * 100) / 100;
+      this.avgPercentageChange = Math.round((this.todayAvg - this.yesterdayAvg) / this.yesterdayAvg * 100);
       this.targetHours = this.targetHours || this.lastTargetHours;
       this.targetAvg = Math.round(this.targetHours / this.workDaysTotal * 100) / 100;
       this.hoursTodayToTargetAvg = Math.round(((this.targetAvg * this.workDaysWorked) - this.totalHours) * 100) / 100;
@@ -159,8 +159,8 @@
         };
       })(this));
       slideOuter = $('<div/>').append('<strong data-targetAvg>').append('<span>target avg</span>');
-      slideInner1 = $('<div data-percentageTodayAvg=width>').append('<strong data-todayAvg>').append('<span>current avg</span>');
-      slideInner2 = $('<div data-percentageTodayToTargetAvg=width>').append('<strong data-hoursTodayToTargetAvg>').append('<span>hours left</span>');
+      slideInner1 = $('<div data-percentageTodayAvg=width>').append('<strong><b data-todayAvg/> <small data-avgPercentageChange></strong>').append('<span>current avg</span>');
+      slideInner2 = $('<div data-percentageTodayToTargetAvg=width>').append('<strong data-hoursTodayToTargetAvg/>').append('<span>hours left</span>');
       slide.append(slideOuter.append(slideInner1).append(slideInner2));
       slide.append(label);
       slide.append(range);
@@ -208,16 +208,29 @@
       localStorage.setItem('lastTargetHours', this.lastTargetHours);
       this.calculateVariables();
       this.addDebug();
-      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'targetAvg', 'todayAvg', 'percentageTodayAvg'];
+      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'targetAvg', 'todayAvg', 'percentageTodayAvg', 'avgPercentageChange'];
       return _.each(boundVariables, (function(_this) {
         return function(variable) {
           return $('[data-' + variable + ']').each(function(i, el) {
-            var $el, method, val;
+            var $el, addNegClass, addPercent, addPosClass, method, val;
             $el = $(el);
             method = $el.attr('data-' + variable) || 'html';
             if ($el[method] && _this[variable]) {
               val = _this[variable];
-              if (method === 'width') {
+              addNegClass = variable === 'avgPercentageChange' && val < 0;
+              if (addNegClass) {
+                $el.addClass('neg');
+              } else {
+                $el.removeClass('neg');
+              }
+              addPosClass = variable === 'avgPercentageChange' && val > 0;
+              if (addPosClass) {
+                $el.addClass('pos');
+              } else {
+                $el.removeClass('pos');
+              }
+              addPercent = method === 'width' || variable === 'avgPercentageChange';
+              if (addPercent) {
                 val += '%';
               }
               return $el[method](val);

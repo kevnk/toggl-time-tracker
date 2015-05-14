@@ -47,6 +47,12 @@ main {
   top: -100px;
   background: #4D78B0;
 }
+#target_slide div .neg {
+  color: #721D1D;
+}
+#target_slide div .pos {
+  color: #9CD8AB;
+}
 #target_slide label {
   display: block;
   margin-top: 20px;

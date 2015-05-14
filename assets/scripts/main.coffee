@@ -94,7 +94,7 @@ Site =
     if @isWorkDay
       @yesterdayAvg = Math.round( (@totalHours - @todaysHours) / (@workDaysWorked - 1) * 100 ) / 100
 
-    @avgPercentageChange = Math.round( (@todayAvg - @yesterdayAvg) / @yesterdayAvg * 100 ) / 100
+    @avgPercentageChange = Math.round( (@todayAvg - @yesterdayAvg) / @yesterdayAvg * 100 )
 
     @targetHours = @targetHours || @lastTargetHours
     @targetAvg = Math.round( @targetHours / @workDaysTotal * 100 ) / 100
@@ -178,10 +178,10 @@ Site =
       .append('<strong data-targetAvg>')
       .append('<span>target avg</span>')
     slideInner1 = $('<div data-percentageTodayAvg=width>')
-      .append('<strong data-todayAvg>')
+      .append('<strong><b data-todayAvg/> <small data-avgPercentageChange></strong>')
       .append('<span>current avg</span>')
     slideInner2 = $('<div data-percentageTodayToTargetAvg=width>')
-      .append('<strong data-hoursTodayToTargetAvg>')
+      .append('<strong data-hoursTodayToTargetAvg/>')
       .append('<span>hours left</span>')
     slide.append(slideOuter.append(slideInner1).append(slideInner2))
 
@@ -237,6 +237,7 @@ Site =
       'targetAvg'
       'todayAvg'
       'percentageTodayAvg'
+      'avgPercentageChange'
     ]
 
     _.each boundVariables, (variable) =>
@@ -245,7 +246,21 @@ Site =
         method = $el.attr('data-' + variable) || 'html'
         if $el[method] and @[variable]
           val = @[variable]
-          val += '%' if method is 'width'
+          # add negative class
+          addNegClass = variable is 'avgPercentageChange' and val < 0
+          if addNegClass
+            $el.addClass('neg')
+          else
+            $el.removeClass('neg')
+          # add positive class
+          addPosClass = variable is 'avgPercentageChange' and val > 0
+          if addPosClass
+            $el.addClass('pos')
+          else
+            $el.removeClass('pos')
+          # add percent sign
+          addPercent = method is 'width' || variable is 'avgPercentageChange'
+          val += '%' if addPercent
           $el[method] val
 
 
