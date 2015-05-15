@@ -39,7 +39,7 @@ main {
 }
 #target_slide div div {
   position: relative;
-  background: rgba(77, 120, 176, 0.5);
+  background: #5480b7;
   transition: width 500ms ease-out;
   min-width: 85px;
 }
