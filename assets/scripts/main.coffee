@@ -244,7 +244,7 @@ Site =
       $('[data-' + variable + ']').each (i, el) =>
         $el = $(el)
         method = $el.attr('data-' + variable) || 'html'
-        if $el[method] and @[variable]
+        unless _.isUndefined($el[method]) or _.isUndefined(@[variable])
           val = @[variable]
           # add negative class
           addNegClass = variable is 'avgPercentageChange' and val < 0
@@ -259,7 +259,7 @@ Site =
           else
             $el.removeClass('pos')
           # add percent sign
-          addPercent = method is 'width' || variable is 'avgPercentageChange'
+          addPercent = method is 'width' || _.contains(['avgPercentageChange'], variable)
           val += '%' if addPercent
           $el[method] val
 

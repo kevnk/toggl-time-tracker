@@ -215,7 +215,7 @@
             var $el, addNegClass, addPercent, addPosClass, method, val;
             $el = $(el);
             method = $el.attr('data-' + variable) || 'html';
-            if ($el[method] && _this[variable]) {
+            if (!(_.isUndefined($el[method]) || _.isUndefined(_this[variable]))) {
               val = _this[variable];
               addNegClass = variable === 'avgPercentageChange' && val < 0;
               if (addNegClass) {
@@ -229,7 +229,7 @@
               } else {
                 $el.removeClass('pos');
               }
-              addPercent = method === 'width' || variable === 'avgPercentageChange';
+              addPercent = method === 'width' || _.contains(['avgPercentageChange'], variable);
               if (addPercent) {
                 val += '%';
               }
