@@ -150,30 +150,30 @@
       return this.toggleContent();
     },
     addTargetSlide: function() {
-      var label, range, slide, slideInner1, slideInner2, slideOuter;
+      var labelDaysOff, labelTargetHours, rangeDaysOff, rangeTargetHours, slide, slideInner1, slideInner2, slideOuter;
       slide = $('<div id="target_slide"/>');
       slideOuter = $('<div class="outer"/>').append('<strong data-targetAvg>').append('<span>target avg</span>');
       slideInner1 = $('<div data-percentageTodayAvg=width>').append('<strong><b data-todayAvg/> <small data-avgPercentageChange></strong>').append('<span>current avg</span>');
       slideInner2 = $('<div data-percentageTodayToTargetAvg=width>').append('<strong data-hoursTodayToTargetAvg/>').append('<span>hours left</span>');
       slide.append(slideOuter.append(slideInner1).append(slideInner2));
-      label = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>').append('<span data-targetHours>');
-      range = $('<input type=range id=target_hours min=100 value=' + this.targetHours + ' max=200 step=1>');
-      range.on('input', (function(_this) {
+      labelTargetHours = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>').append('<span data-targetHours>');
+      rangeTargetHours = $('<input type=range id=target_hours min=100 value=' + this.targetHours + ' max=200 step=1>');
+      rangeTargetHours.on('input', (function(_this) {
         return function() {
-          _this.targetHours = range.val();
+          _this.targetHours = rangeTargetHours.val();
           return _this.recalculateValues();
         };
       })(this));
-      slide.append($('<div>').append(label).append(range));
-      label = $('<label for=days_off>Remaining Days Off: </label>').append('<span data-daysOff>');
-      range = $('<input type=range id=days_off min=0 value=' + this.daysOff + ' max=15 step=1>');
-      range.on('input', (function(_this) {
+      slide.append($('<div>').append(labelTargetHours).append(rangeTargetHours));
+      labelDaysOff = $('<label for=days_off>Remaining Days Off: </label>').append('<span data-daysOff>');
+      rangeDaysOff = $('<input type=range id=days_off min=0 value=' + this.daysOff + ' max=15 step=1>');
+      rangeDaysOff.on('input', (function(_this) {
         return function() {
-          _this.daysOff = range.val();
+          _this.daysOff = rangeDaysOff.val();
           return _this.recalculateValues();
         };
       })(this));
-      slide.append($('<div>').append(label).append(range));
+      slide.append($('<div>').append(labelDaysOff).append(rangeDaysOff));
       return this.slides.push(slide);
     },
     addSlidesToContent: function() {
@@ -288,6 +288,8 @@
       if (location.host !== 'localhost') {
         return;
       }
+      console.log('%c ===========================================================', 'color:red');
+      console.log('%c ===========================================================', 'color:red');
       this.$debug = this.$debug || $('body').append('<div id="debug" class="container">').find('#debug');
       this.$debug.html('');
       console.log('%c DEBUG: Site -->', 'color:#F80', Site);

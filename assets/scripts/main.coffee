@@ -181,24 +181,26 @@ Site =
       .append('<span>hours left</span>')
     slide.append(slideOuter.append(slideInner1).append(slideInner2))
 
-    label = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>')
+
+    labelTargetHours = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>')
       .append('<span data-targetHours>')
-    range = $('<input type=range id=target_hours min=100 value=' + @targetHours + ' max=200 step=1>')
-    range.on 'input', =>
-      @targetHours = range.val()
+    rangeTargetHours = $('<input type=range id=target_hours min=100 value=' + @targetHours + ' max=200 step=1>')
+    rangeTargetHours.on 'input', =>
+      @targetHours = rangeTargetHours.val()
       @recalculateValues()
 
-    slide.append $('<div>').append(label).append(range)
+    slide.append $('<div>').append(labelTargetHours).append(rangeTargetHours)
 
 
-    label = $('<label for=days_off>Remaining Days Off: </label>')
+    labelDaysOff = $('<label for=days_off>Remaining Days Off: </label>')
       .append('<span data-daysOff>')
-    range = $('<input type=range id=days_off min=0 value=' + @daysOff + ' max=15 step=1>')
-    range.on 'input', =>
-      @daysOff = range.val()
+    rangeDaysOff = $('<input type=range id=days_off min=0 value=' + @daysOff + ' max=15 step=1>')
+    rangeDaysOff.on 'input', =>
+      @daysOff = rangeDaysOff.val()
       @recalculateValues()
 
-    slide.append $('<div>').append(label).append(range)
+    slide.append $('<div>').append(labelDaysOff).append(rangeDaysOff)
+
 
     @slides.push slide
 
@@ -365,6 +367,8 @@ Site =
   addDebug: ->
     return unless location.host is 'localhost'
     # console.clear() if @$debug
+    console.log('%c ===========================================================', 'color:red')
+    console.log('%c ===========================================================', 'color:red')
     @$debug = @$debug || $('body').append('<div id="debug" class="container">').find('#debug')
     @$debug.html('')
 
