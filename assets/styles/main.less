@@ -20,13 +20,17 @@ main {
 }
 
 #target_slide {
-  div {
+  overflow: hidden;
+  .outer,
+  .outer div {
     color: #FFF;
     position: relative;
-    background: #5E88BF;
     height: 100px;
     font-size: 20px;
     line-height: 20px;
+  }
+  .outer {
+    background: #5E88BF;
     strong {
       position: absolute;
       top: 50%;
@@ -56,6 +60,14 @@ main {
     .pos {
       color: #9CD8AB;
     }
+  }
+  .outer ~ div {
+    width: 49%;
+    margin-left: 2%;
+    float: left;
+  }
+  .outer + div {
+    margin-left: 0;
   }
   label {
     display: block;

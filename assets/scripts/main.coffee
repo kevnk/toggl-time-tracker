@@ -63,6 +63,7 @@ Site =
         @holidaysByName[holiday] = holidayObj
 
     @lastTargetHours = localStorage.getItem('lastTargetHours') || 140
+    @lastDaysOff = localStorage.getItem('lastDaysOff') || 0
 
 
   calculateVariables: ->
@@ -83,7 +84,8 @@ Site =
 
     @isWorkDay = @isWeekday # and not @isVacationDay
 
-    @workDaysTotal = @bom.weekDays( @eom )
+    @daysOff = @daysOff || @lastDaysOff
+    @workDaysTotal = @bom.weekDays( @eom ) - @daysOff
     @workDaysWorked = @bom.weekDays( @today ) # - @vacationDaysSpent
     @workDaysWorked++ if @isWorkDay
     @workDaysLeft = @workDaysTotal - @workDaysWorked # - @vacationDaysRemaining
@@ -104,6 +106,8 @@ Site =
     @percentageTodayToTargetAvg = Math.round( @todaysHours / @totalHoursTodayToTargetAvg * 100 )
 
     @percentageTodayAvg = Math.round( @todayAvg / @targetAvg * 100 )
+
+
 
     return
 
@@ -166,15 +170,7 @@ Site =
   addTargetSlide: ->
     slide = $('<div id="target_slide"/>')
 
-    label = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>')
-      .append('<span data-targetHours>')
-    range = $('<input type=range id=target_hours min=100 value=' + @targetHours + ' max=200 step=1>')
-    range.on 'input', =>
-      @targetHours = range.val()
-      @recalculateValues()
-
-
-    slideOuter = $('<div/>')
+    slideOuter = $('<div class="outer"/>')
       .append('<strong data-targetAvg>')
       .append('<span>target avg</span>')
     slideInner1 = $('<div data-percentageTodayAvg=width>')
@@ -185,8 +181,24 @@ Site =
       .append('<span>hours left</span>')
     slide.append(slideOuter.append(slideInner1).append(slideInner2))
 
-    slide.append label
-    slide.append range
+    label = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>')
+      .append('<span data-targetHours>')
+    range = $('<input type=range id=target_hours min=100 value=' + @targetHours + ' max=200 step=1>')
+    range.on 'input', =>
+      @targetHours = range.val()
+      @recalculateValues()
+
+    slide.append $('<div>').append(label).append(range)
+
+
+    label = $('<label for=days_off>Remaining Days Off: </label>')
+      .append('<span data-daysOff>')
+    range = $('<input type=range id=days_off min=0 value=' + @daysOff + ' max=15 step=1>')
+    range.on 'input', =>
+      @daysOff = range.val()
+      @recalculateValues()
+
+    slide.append $('<div>').append(label).append(range)
 
     @slides.push slide
 
@@ -225,6 +237,9 @@ Site =
     @lastTargetHours = @targetHours
     localStorage.setItem('lastTargetHours', @lastTargetHours)
 
+    @lastDaysOff = @daysOff
+    localStorage.setItem('lastDaysOff', @lastDaysOff)
+
     # RECALCULATE
     @calculateVariables()
     @addDebug()
@@ -238,6 +253,7 @@ Site =
       'todayAvg'
       'percentageTodayAvg'
       'avgPercentageChange'
+      'daysOff'
     ]
 
     _.each boundVariables, (variable) =>

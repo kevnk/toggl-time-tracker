@@ -62,11 +62,13 @@
           }
         };
       })(this));
-      return this.lastTargetHours = localStorage.getItem('lastTargetHours') || 140;
+      this.lastTargetHours = localStorage.getItem('lastTargetHours') || 140;
+      return this.lastDaysOff = localStorage.getItem('lastDaysOff') || 0;
     },
     calculateVariables: function() {
       this.isWorkDay = this.isWeekday;
-      this.workDaysTotal = this.bom.weekDays(this.eom);
+      this.daysOff = this.daysOff || this.lastDaysOff;
+      this.workDaysTotal = this.bom.weekDays(this.eom) - this.daysOff;
       this.workDaysWorked = this.bom.weekDays(this.today);
       if (this.isWorkDay) {
         this.workDaysWorked++;
@@ -150,6 +152,10 @@
     addTargetSlide: function() {
       var label, range, slide, slideInner1, slideInner2, slideOuter;
       slide = $('<div id="target_slide"/>');
+      slideOuter = $('<div class="outer"/>').append('<strong data-targetAvg>').append('<span>target avg</span>');
+      slideInner1 = $('<div data-percentageTodayAvg=width>').append('<strong><b data-todayAvg/> <small data-avgPercentageChange></strong>').append('<span>current avg</span>');
+      slideInner2 = $('<div data-percentageTodayToTargetAvg=width>').append('<strong data-hoursTodayToTargetAvg/>').append('<span>hours left</span>');
+      slide.append(slideOuter.append(slideInner1).append(slideInner2));
       label = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>').append('<span data-targetHours>');
       range = $('<input type=range id=target_hours min=100 value=' + this.targetHours + ' max=200 step=1>');
       range.on('input', (function(_this) {
@@ -158,12 +164,16 @@
           return _this.recalculateValues();
         };
       })(this));
-      slideOuter = $('<div/>').append('<strong data-targetAvg>').append('<span>target avg</span>');
-      slideInner1 = $('<div data-percentageTodayAvg=width>').append('<strong><b data-todayAvg/> <small data-avgPercentageChange></strong>').append('<span>current avg</span>');
-      slideInner2 = $('<div data-percentageTodayToTargetAvg=width>').append('<strong data-hoursTodayToTargetAvg/>').append('<span>hours left</span>');
-      slide.append(slideOuter.append(slideInner1).append(slideInner2));
-      slide.append(label);
-      slide.append(range);
+      slide.append($('<div>').append(label).append(range));
+      label = $('<label for=days_off>Remaining Days Off: </label>').append('<span data-daysOff>');
+      range = $('<input type=range id=days_off min=0 value=' + this.daysOff + ' max=15 step=1>');
+      range.on('input', (function(_this) {
+        return function() {
+          _this.daysOff = range.val();
+          return _this.recalculateValues();
+        };
+      })(this));
+      slide.append($('<div>').append(label).append(range));
       return this.slides.push(slide);
     },
     addSlidesToContent: function() {
@@ -206,9 +216,11 @@
       var boundVariables;
       this.lastTargetHours = this.targetHours;
       localStorage.setItem('lastTargetHours', this.lastTargetHours);
+      this.lastDaysOff = this.daysOff;
+      localStorage.setItem('lastDaysOff', this.lastDaysOff);
       this.calculateVariables();
       this.addDebug();
-      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'targetAvg', 'todayAvg', 'percentageTodayAvg', 'avgPercentageChange'];
+      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'targetAvg', 'todayAvg', 'percentageTodayAvg', 'avgPercentageChange', 'daysOff'];
       return _.each(boundVariables, (function(_this) {
         return function(variable) {
           return $('[data-' + variable + ']').each(function(i, el) {

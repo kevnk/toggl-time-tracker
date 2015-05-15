@@ -16,42 +16,56 @@ main {
   left: 0;
   position: absolute;
 }
-#target_slide div {
+#target_slide {
+  overflow: hidden;
+}
+#target_slide .outer,
+#target_slide .outer div {
   color: #FFF;
   position: relative;
-  background: #5E88BF;
   height: 100px;
   font-size: 20px;
   line-height: 20px;
 }
-#target_slide div strong {
+#target_slide .outer {
+  background: #5E88BF;
+}
+#target_slide .outer strong {
   position: absolute;
   top: 50%;
   margin-top: -20px;
   right: 10px;
 }
-#target_slide div span {
+#target_slide .outer span {
   font-size: 15px;
   position: absolute;
   top: 50%;
   margin-top: 5px;
   right: 10px;
 }
-#target_slide div div {
+#target_slide .outer div {
   position: relative;
   background: #5480b7;
   transition: width 500ms ease-out;
   min-width: 85px;
 }
-#target_slide div div + div {
+#target_slide .outer div + div {
   top: -100px;
   background: #4D78B0;
 }
-#target_slide div .neg {
+#target_slide .outer .neg {
   color: #721D1D;
 }
-#target_slide div .pos {
+#target_slide .outer .pos {
   color: #9CD8AB;
+}
+#target_slide .outer ~ div {
+  width: 49%;
+  margin-left: 2%;
+  float: left;
+}
+#target_slide .outer + div {
+  margin-left: 0;
 }
 #target_slide label {
   display: block;
