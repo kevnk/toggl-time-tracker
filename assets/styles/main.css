@@ -27,18 +27,87 @@ main {
   text-align: right;
   padding-right: 10px;
 }
+.slick-dots {
+  list-style: none;
+  margin: 30px auto;
+  padding: 0;
+  text-align: center;
+}
+.slick-dots li {
+  display: inline-block;
+}
+.slick-dots button {
+  text-indent: -99999px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  background: transparent;
+}
+.slick-dots button:after {
+  position: absolute;
+  top: 50%;
+  margin-top: -6px;
+  left: 50%;
+  margin-left: -6px;
+  background: rgba(86, 129, 184, 0.5);
+  content: '';
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+}
+.slick-dots button:focus {
+  outline: 0;
+}
+.slick-dots .slick-active button:after,
+.slick-dots .slick-active button:hover:after {
+  background: #5681b8;
+}
+#slides {
+  padding-bottom: 30px;
+  text-align: center;
+}
+.hoursTodayToTargetAvg_slide .outer,
+.hoursTodayToEomTargetAvg_slide .outer {
+  background: #5681b8;
+  overflow: hidden;
+}
+.hoursTodayToTargetAvg_slide .outer div,
+.hoursTodayToEomTargetAvg_slide .outer div {
+  background: #4874ac;
+  padding: 10px 15px 20px;
+  text-align: right;
+  min-width: 200px;
+}
+.hoursTodayToTargetAvg_slide .outer div h3,
+.hoursTodayToEomTargetAvg_slide .outer div h3 {
+  color: #fff;
+  margin: 0;
+  font-size: 70px;
+}
+.hoursTodayToTargetAvg_slide .outer div small,
+.hoursTodayToEomTargetAvg_slide .outer div small {
+  color: #fff;
+  display: block;
+  font-size: 18px;
+}
 #stats {
   display: -webkit-box;
   display: -moz-box;
   display: -ms-flexbox;
   display: flex;
   -webkit-flex-flow: row wrap;
+  flex-flow: row wrap;
   justify-content: space-around;
+  align-items: baseline;
   margin: 20px 0;
 }
 #stats > div {
-  width: 15%;
-  margin: 0.5%;
+  flex-grow: 1;
+  padding: 0 7px;
   text-align: center;
 }
 #stats > div h3 {
@@ -60,12 +129,14 @@ main {
   display: -ms-flexbox;
   display: flex;
   -webkit-flex-flow: row wrap;
+  flex-flow: row wrap;
   justify-content: space-around;
+  align-items: baseline;
   margin: 20px 0;
 }
 #adjusters > div {
-  width: 23%;
-  margin: 1%;
+  flex-grow: 1;
+  padding: 0 7px;
 }
 #adjusters label {
   display: block;
@@ -87,7 +158,9 @@ main {
   display: -ms-flexbox;
   display: flex;
   -webkit-flex-flow: row wrap;
+  flex-flow: row wrap;
   justify-content: space-around;
+  align-items: baseline;
 }
 .truncate {
   overflow: hidden;

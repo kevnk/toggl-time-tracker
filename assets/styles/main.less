@@ -39,18 +39,84 @@ main {
   }
 }
 
+// Vendor Stuff
+
+.slick-dots {
+  list-style: none;
+  margin: 30px auto;
+  padding: 0;
+  text-align: center;
+  li {
+    display: inline-block;
+  }
+  button {
+    text-indent: -99999px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    padding: 0;
+    margin: 0;
+    position: relative;
+    background: transparent;
+    &:after {
+      position: absolute;
+      top: 50%;
+      margin-top: -6px;
+      left: 50%;
+      margin-left: -6px;
+      background: fade(@color-light-blue, 50%);
+      content: '';
+      display: block;
+      width: 12px;
+      height: 12px;
+      border-radius: 6px;
+    }
+    &:focus {
+      outline: 0;
+    }
+  }
+  .slick-active button:after,
+  .slick-active button:hover:after {
+    background: @color-light-blue;
+  }
+}
+
 // Main content
 
 #slides {
-
+  padding-bottom: 30px;
+  text-align: center;
+}
+.hoursTodayToTargetAvg_slide,
+.hoursTodayToEomTargetAvg_slide {
+  .outer {
+    background: @color-light-blue;
+    overflow: hidden;
+    div {
+      background: darken(@color-light-blue, 5%);
+      padding: 10px 15px 20px;
+      text-align: right;
+      min-width: 200px;
+      h3 {
+        color: #fff;
+        margin: 0;
+        font-size: 70px;
+      }
+      small {
+        color: #fff;
+        display: block;
+        font-size: 18px;
+      }
+    }
+  }
 }
 
 #stats {
   .flex;
   margin: 20px 0;
   > div {
-    width: 15%;
-    margin: 0.5%;
+    flex-grow: 1;
+    padding: 0 7px;
     text-align: center;
     h3 {
       border-radius: 6px;
@@ -72,8 +138,8 @@ main {
   .flex;
   margin: 20px 0;
   > div {
-    width: 23%;
-    margin: 1%;
+    flex-grow: 1;
+    padding: 0 7px;
   }
   label {
     display: block;
@@ -98,11 +164,12 @@ main {
   display: -ms-flexbox;
   display: flex;
   -webkit-flex-flow: row wrap;
+  flex-flow: row wrap;
   justify-content: space-around;
+  align-items: baseline;
 }
 .truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-
 }

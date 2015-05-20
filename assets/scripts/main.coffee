@@ -56,7 +56,7 @@ window.Site =
     @daysOff = @daysOff || @lastDaysOff
     @takenDaysOff = @takenDaysOff || @lastTakenDaysOff
     @workDaysTotal = @bom.weekDays( @eom ) - @daysOff
-    @workDaysWorked = @bom.weekDays( @today ) - 2 - @takenDaysOff
+    @workDaysWorked = @bom.weekDays( @today ) - @takenDaysOff
     @workDaysWorked++ if @isWorkDay
     @workDaysLeft = @workDaysTotal - @workDaysWorked
 
@@ -74,8 +74,14 @@ window.Site =
     @totalHoursTodayToTargetAvg = Math.round( (@hoursTodayToTargetAvg + @todaysHours) * 100 ) / 100
     @percentageTodayToTargetAvg = Math.round( @todaysHours / @totalHoursTodayToTargetAvg * 100 )
 
-    @percentageTodayAvg = Math.round( @todayAvg / @targetAvg * 100 )
+    @totalHoursLeftToEomTarget = Math.round( (@targetHours - @totalHours) * 100 ) / 100
+    # @avgTodayToEomTarget = Math.round( @targetHours / @workDaysTotal * 100 ) / 100
+    workDaysLeft = if @isWorkDay then @workDaysLeft + 1 else @workDaysLeft
+    @avgTodayToEomTarget = Math.round( @totalHoursLeftToEomTarget / workDaysLeft * 100 ) / 100
+    @hoursTodayToEomTargetAvg = Math.round( (@avgTodayToEomTarget - @todaysHours) * 100 ) / 100
+    @percentageTodayToEomTargetAvg = Math.round( (@todaysHours / @avgTodayToEomTarget) * 100 )
 
+    @percentageTodayAvg = Math.round( @todayAvg / @targetAvg * 100 )
 
 
     return
@@ -127,7 +133,8 @@ window.Site =
 
   displayData: ->
     @slides = []
-    @createTargetSlide()
+    @createTargetTodaySlide()
+    @createTargetEomSlide()
 
     @addSlidesToContent()
     @addSlickCarousel()
@@ -142,15 +149,30 @@ window.Site =
   # avg to hit target by eom
 
 
-  createTargetSlide: ->
-    slide = $('<div id="target_slide"/>')
+  createTargetTodaySlide: ->
+    $slide = $('<div class="hoursTodayToTargetAvg_slide"/>')
+    $slide.append $('<h1>Hit Target Avg Today</h1>')
 
-    @slides.push slide
+    $hoursToTarget = $('<div data-percentageTodayToTargetAvg="width">')
+    $hoursToTarget.append $('<h3><span data-hoursTodayToTargetAvg/> <small>Hours Left Today</small></h3>')
+    $outer = $('<div class="outer">').append $hoursToTarget
 
-  createTargetSlide2: ->
-    slide = $('<div id="target_slide"/>')
+    $slide.append $outer
 
-    @slides.push slide
+    @slides.push $slide
+
+
+  createTargetEomSlide: ->
+    $slide = $('<div class="hoursTodayToEomTargetAvg_slide"/>')
+    $slide.append $('<h1>Hit Target Avg By End of Month</h1>')
+
+    $hoursToTarget = $('<div data-percentageTodayToEomTargetAvg="width">')
+    $hoursToTarget.append $('<h3><span data-hoursTodayToEomTargetAvg/> <small>Hours Left Today</small></h3>')
+    $outer = $('<div class="outer">').append $hoursToTarget
+
+    $slide.append $outer
+
+    @slides.push $slide
 
 
   addSlidesToContent: ->
@@ -166,6 +188,7 @@ window.Site =
     @$slides = $('#slides').slick({
       dots: true,
       speed: 500,
+      arrows: false,
       slidesToShow: 1,
       slidesToScroll: 1,
       infinite: true
@@ -176,18 +199,6 @@ window.Site =
 
   addStats: ->
     $stats = $('<div id="stats">')
-
-    # current avg
-    $todayAvg = $('<div>')
-    $todayAvg.append $('<h3 data-todayAvg>')
-    $todayAvg.append $('<small>Current Avg</small>')
-    $stats.append $todayAvg
-
-    # % change from yesterday's avg
-    $changeInAvg = $('<div>')
-    $changeInAvg.append $('<h3 data-avgPercentageChange>')
-    $changeInAvg.append $('<small>Avg % Change</small>')
-    $stats.append $changeInAvg
 
     # todays hours logged
     $todaysHours = $('<div>')
@@ -200,6 +211,24 @@ window.Site =
     $totalHours.append $('<h3 data-totalHours>')
     $totalHours.append $('<small>' + moment().format('MMMM') + ' Hours</small>')
     $stats.append $totalHours
+
+    # current avg
+    $todayAvg = $('<div>')
+    $todayAvg.append $('<h3 data-todayAvg>')
+    $todayAvg.append $('<small>Current Avg</small>')
+    $stats.append $todayAvg
+
+    # current avg
+    $avgTodayToEomTarget = $('<div>')
+    $avgTodayToEomTarget.append $('<h3 data-avgTodayToEomTarget>')
+    $avgTodayToEomTarget.append $('<small>Avg To EOM Target</small>')
+    $stats.append $avgTodayToEomTarget
+
+    # % change from yesterday's avg
+    # $changeInAvg = $('<div>')
+    # $changeInAvg.append $('<h3 data-avgPercentageChange>')
+    # $changeInAvg.append $('<small>Avg % Change From Yesterday</small>')
+    # $stats.append $changeInAvg
 
     # Days worked
     $workDaysWorked = $('<div>')
@@ -220,9 +249,9 @@ window.Site =
   addAdjustersToContent: ->
     $adjusters = $('<div id="adjusters">')
 
-    labelTargetHours = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>')
+    labelTargetHours = $('<label for=targetHours_adjuster>Target Hours for ' + moment().format('MMMM') + ': </label>')
       .append('<span data-targetHours>')
-    rangeTargetHours = $('<input type=range id=target_hours min=100 value=' + @targetHours + ' max=200 step=1>')
+    rangeTargetHours = $('<input type=range id=targetHours_adjuster min=100 value=' + @targetHours + ' max=200 step=1>')
     rangeTargetHours.on 'input', =>
       @targetHours = rangeTargetHours.val()
       @recalculateValues()
@@ -230,9 +259,9 @@ window.Site =
     $adjusters.append $('<div>').append(labelTargetHours).append(rangeTargetHours)
 
 
-    labelDaysOff = $('<label for=days_off>Remaining Days Off: </label>')
+    labelDaysOff = $('<label for=daysOff_adjuster>Remaining Days Off: </label>')
       .append('<span data-daysOff>')
-    rangeDaysOff = $('<input type=range id=days_off min=0 value=' + @daysOff + ' max=15 step=1>')
+    rangeDaysOff = $('<input type=range id=daysOff_adjuster min=0 value=' + @daysOff + ' max=15 step=1>')
     rangeDaysOff.on 'input', =>
       @daysOff = rangeDaysOff.val()
       @recalculateValues()
@@ -240,9 +269,9 @@ window.Site =
     $adjusters.append $('<div>').append(labelDaysOff).append(rangeDaysOff)
 
 
-    labelTakenDaysOff = $('<label for=taken_days_off>Used Days Off: </label>')
+    labelTakenDaysOff = $('<label for=takenDaysOff_adjuster>Used Days Off: </label>')
       .append('<span data-takenDaysOff>')
-    rangeTakenDaysOff = $('<input type=range id=taken_days_off min=0 value=' + @takenDaysOff + ' max=15 step=1>')
+    rangeTakenDaysOff = $('<input type=range id=takenDaysOff_adjuster min=0 value=' + @takenDaysOff + ' max=15 step=1>')
     rangeTakenDaysOff.on 'input', =>
       @takenDaysOff = rangeTakenDaysOff.val()
       @recalculateValues()
@@ -254,11 +283,11 @@ window.Site =
 
   toggleContent: (show=true) ->
     if show
-      @$loader.addClass('fade')
-      @$content.removeClass('fade')
+      @$loader.removeClass('in')
+      @$content.addClass('in')
     else
-      @$loader.removeClass('fade')
-      @$content.addClass('fade')
+      @$loader.addClass('in')
+      @$content.removeClass('in')
 
 
   recalculateValues: ->
@@ -290,6 +319,9 @@ window.Site =
       'takenDaysOff'
       'workDaysWorked'
       'workDaysLeft'
+      'hoursTodayToEomTargetAvg'
+      'percentageTodayToEomTargetAvg'
+      'avgTodayToEomTarget'
     ]
 
     _.each boundVariables, (variable) =>
@@ -298,22 +330,33 @@ window.Site =
         method = $el.attr('data-' + variable) || 'html'
         unless _.isUndefined($el[method]) or _.isUndefined(@[variable])
           val = @[variable]
+
           # add negative class
           addNegClass = variable is 'avgPercentageChange' and val < 0
           if addNegClass
             $el.addClass('neg')
           else
             $el.removeClass('neg')
+
           # add positive class
           addPosClass = variable is 'avgPercentageChange' and val > 0
           if addPosClass
             $el.addClass('pos')
           else
             $el.removeClass('pos')
+
           # add percent sign
-          addPercent = method is 'width' || _.contains(['avgPercentageChange'], variable)
+          addPercent = method is 'width' || _.contains(['avgPercentageChange', 'percentageTodayToTargetAvg'], variable)
           val += '%' if addPercent
-          $el[method] val
+
+          # Set it
+          if method is 'html'
+            $el.html val
+          else
+            css = {}
+            val = '100%' if parseFloat(val, 10) > 100
+            css[method] = val
+            $el.css css
 
 
   attachAutoRefresh: ->

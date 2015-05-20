@@ -43,11 +43,12 @@
       return this.lastTakenDaysOff = localStorage.getItem('lastTakenDaysOff') || 0;
     },
     calculateVariables: function() {
+      var workDaysLeft;
       this.isWorkDay = this.isWeekday;
       this.daysOff = this.daysOff || this.lastDaysOff;
       this.takenDaysOff = this.takenDaysOff || this.lastTakenDaysOff;
       this.workDaysTotal = this.bom.weekDays(this.eom) - this.daysOff;
-      this.workDaysWorked = this.bom.weekDays(this.today) - 2 - this.takenDaysOff;
+      this.workDaysWorked = this.bom.weekDays(this.today) - this.takenDaysOff;
       if (this.isWorkDay) {
         this.workDaysWorked++;
       }
@@ -63,6 +64,11 @@
       this.hoursTodayToTargetAvg = Math.round(((this.targetAvg * this.workDaysWorked) - this.totalHours) * 100) / 100;
       this.totalHoursTodayToTargetAvg = Math.round((this.hoursTodayToTargetAvg + this.todaysHours) * 100) / 100;
       this.percentageTodayToTargetAvg = Math.round(this.todaysHours / this.totalHoursTodayToTargetAvg * 100);
+      this.totalHoursLeftToEomTarget = Math.round((this.targetHours - this.totalHours) * 100) / 100;
+      workDaysLeft = this.isWorkDay ? this.workDaysLeft + 1 : this.workDaysLeft;
+      this.avgTodayToEomTarget = Math.round(this.totalHoursLeftToEomTarget / workDaysLeft * 100) / 100;
+      this.hoursTodayToEomTargetAvg = Math.round((this.avgTodayToEomTarget - this.todaysHours) * 100) / 100;
+      this.percentageTodayToEomTargetAvg = Math.round((this.todaysHours / this.avgTodayToEomTarget) * 100);
       this.percentageTodayAvg = Math.round(this.todayAvg / this.targetAvg * 100);
     },
     getData: function() {
@@ -120,7 +126,8 @@
     },
     displayData: function() {
       this.slides = [];
-      this.createTargetSlide();
+      this.createTargetTodaySlide();
+      this.createTargetEomSlide();
       this.addSlidesToContent();
       this.addSlickCarousel();
       this.addStats();
@@ -129,15 +136,25 @@
       this.addDebug();
       return this.toggleContent();
     },
-    createTargetSlide: function() {
-      var slide;
-      slide = $('<div id="target_slide"/>');
-      return this.slides.push(slide);
+    createTargetTodaySlide: function() {
+      var $hoursToTarget, $outer, $slide;
+      $slide = $('<div class="hoursTodayToTargetAvg_slide"/>');
+      $slide.append($('<h1>Hit Target Avg Today</h1>'));
+      $hoursToTarget = $('<div data-percentageTodayToTargetAvg="width">');
+      $hoursToTarget.append($('<h3><span data-hoursTodayToTargetAvg/> <small>Hours Left Today</small></h3>'));
+      $outer = $('<div class="outer">').append($hoursToTarget);
+      $slide.append($outer);
+      return this.slides.push($slide);
     },
-    createTargetSlide2: function() {
-      var slide;
-      slide = $('<div id="target_slide"/>');
-      return this.slides.push(slide);
+    createTargetEomSlide: function() {
+      var $hoursToTarget, $outer, $slide;
+      $slide = $('<div class="hoursTodayToEomTargetAvg_slide"/>');
+      $slide.append($('<h1>Hit Target Avg By End of Month</h1>'));
+      $hoursToTarget = $('<div data-percentageTodayToEomTargetAvg="width">');
+      $hoursToTarget.append($('<h3><span data-hoursTodayToEomTargetAvg/> <small>Hours Left Today</small></h3>'));
+      $outer = $('<div class="outer">').append($hoursToTarget);
+      $slide.append($outer);
+      return this.slides.push($slide);
     },
     addSlidesToContent: function() {
       this.$content.html('<div id="slides"/><div id="pager"/>');
@@ -155,6 +172,7 @@
       this.$slides = $('#slides').slick({
         dots: true,
         speed: 500,
+        arrows: false,
         slidesToShow: 1,
         slidesToScroll: 1,
         infinite: true
@@ -164,16 +182,8 @@
       });
     },
     addStats: function() {
-      var $changeInAvg, $stats, $todayAvg, $todaysHours, $totalHours, $workDaysLeft, $workDaysWorked;
+      var $avgTodayToEomTarget, $stats, $todayAvg, $todaysHours, $totalHours, $workDaysLeft, $workDaysWorked;
       $stats = $('<div id="stats">');
-      $todayAvg = $('<div>');
-      $todayAvg.append($('<h3 data-todayAvg>'));
-      $todayAvg.append($('<small>Current Avg</small>'));
-      $stats.append($todayAvg);
-      $changeInAvg = $('<div>');
-      $changeInAvg.append($('<h3 data-avgPercentageChange>'));
-      $changeInAvg.append($('<small>Avg % Change</small>'));
-      $stats.append($changeInAvg);
       $todaysHours = $('<div>');
       $todaysHours.append($('<h3 data-todaysHours>'));
       $todaysHours.append($('<small>Today\'s Hours</small>'));
@@ -182,6 +192,14 @@
       $totalHours.append($('<h3 data-totalHours>'));
       $totalHours.append($('<small>' + moment().format('MMMM') + ' Hours</small>'));
       $stats.append($totalHours);
+      $todayAvg = $('<div>');
+      $todayAvg.append($('<h3 data-todayAvg>'));
+      $todayAvg.append($('<small>Current Avg</small>'));
+      $stats.append($todayAvg);
+      $avgTodayToEomTarget = $('<div>');
+      $avgTodayToEomTarget.append($('<h3 data-avgTodayToEomTarget>'));
+      $avgTodayToEomTarget.append($('<small>Avg To EOM Target</small>'));
+      $stats.append($avgTodayToEomTarget);
       $workDaysWorked = $('<div>');
       $workDaysWorked.append($('<h3 data-workDaysWorked>'));
       $workDaysWorked.append($('<small>Days Worked</small>'));
@@ -195,8 +213,8 @@
     addAdjustersToContent: function() {
       var $adjusters, labelDaysOff, labelTakenDaysOff, labelTargetHours, rangeDaysOff, rangeTakenDaysOff, rangeTargetHours;
       $adjusters = $('<div id="adjusters">');
-      labelTargetHours = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>').append('<span data-targetHours>');
-      rangeTargetHours = $('<input type=range id=target_hours min=100 value=' + this.targetHours + ' max=200 step=1>');
+      labelTargetHours = $('<label for=targetHours_adjuster>Target Hours for ' + moment().format('MMMM') + ': </label>').append('<span data-targetHours>');
+      rangeTargetHours = $('<input type=range id=targetHours_adjuster min=100 value=' + this.targetHours + ' max=200 step=1>');
       rangeTargetHours.on('input', (function(_this) {
         return function() {
           _this.targetHours = rangeTargetHours.val();
@@ -204,8 +222,8 @@
         };
       })(this));
       $adjusters.append($('<div>').append(labelTargetHours).append(rangeTargetHours));
-      labelDaysOff = $('<label for=days_off>Remaining Days Off: </label>').append('<span data-daysOff>');
-      rangeDaysOff = $('<input type=range id=days_off min=0 value=' + this.daysOff + ' max=15 step=1>');
+      labelDaysOff = $('<label for=daysOff_adjuster>Remaining Days Off: </label>').append('<span data-daysOff>');
+      rangeDaysOff = $('<input type=range id=daysOff_adjuster min=0 value=' + this.daysOff + ' max=15 step=1>');
       rangeDaysOff.on('input', (function(_this) {
         return function() {
           _this.daysOff = rangeDaysOff.val();
@@ -213,8 +231,8 @@
         };
       })(this));
       $adjusters.append($('<div>').append(labelDaysOff).append(rangeDaysOff));
-      labelTakenDaysOff = $('<label for=taken_days_off>Used Days Off: </label>').append('<span data-takenDaysOff>');
-      rangeTakenDaysOff = $('<input type=range id=taken_days_off min=0 value=' + this.takenDaysOff + ' max=15 step=1>');
+      labelTakenDaysOff = $('<label for=takenDaysOff_adjuster>Used Days Off: </label>').append('<span data-takenDaysOff>');
+      rangeTakenDaysOff = $('<input type=range id=takenDaysOff_adjuster min=0 value=' + this.takenDaysOff + ' max=15 step=1>');
       rangeTakenDaysOff.on('input', (function(_this) {
         return function() {
           _this.takenDaysOff = rangeTakenDaysOff.val();
@@ -229,11 +247,11 @@
         show = true;
       }
       if (show) {
-        this.$loader.addClass('fade');
-        return this.$content.removeClass('fade');
+        this.$loader.removeClass('in');
+        return this.$content.addClass('in');
       } else {
-        this.$loader.removeClass('fade');
-        return this.$content.addClass('fade');
+        this.$loader.addClass('in');
+        return this.$content.removeClass('in');
       }
     },
     recalculateValues: function() {
@@ -246,11 +264,11 @@
       localStorage.setItem('lastTakenDaysOff', this.lastTakenDaysOff);
       this.calculateVariables();
       this.addDebug();
-      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'totalHours', 'todaysHours', 'targetAvg', 'todayAvg', 'percentageTodayAvg', 'avgPercentageChange', 'daysOff', 'takenDaysOff', 'workDaysWorked', 'workDaysLeft'];
+      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'totalHours', 'todaysHours', 'targetAvg', 'todayAvg', 'percentageTodayAvg', 'avgPercentageChange', 'daysOff', 'takenDaysOff', 'workDaysWorked', 'workDaysLeft', 'hoursTodayToEomTargetAvg', 'percentageTodayToEomTargetAvg', 'avgTodayToEomTarget'];
       return _.each(boundVariables, (function(_this) {
         return function(variable) {
           return $('[data-' + variable + ']').each(function(i, el) {
-            var $el, addNegClass, addPercent, addPosClass, method, val;
+            var $el, addNegClass, addPercent, addPosClass, css, method, val;
             $el = $(el);
             method = $el.attr('data-' + variable) || 'html';
             if (!(_.isUndefined($el[method]) || _.isUndefined(_this[variable]))) {
@@ -267,11 +285,20 @@
               } else {
                 $el.removeClass('pos');
               }
-              addPercent = method === 'width' || _.contains(['avgPercentageChange'], variable);
+              addPercent = method === 'width' || _.contains(['avgPercentageChange', 'percentageTodayToTargetAvg'], variable);
               if (addPercent) {
                 val += '%';
               }
-              return $el[method](val);
+              if (method === 'html') {
+                return $el.html(val);
+              } else {
+                css = {};
+                if (parseFloat(val, 10) > 100) {
+                  val = '100%';
+                }
+                css[method] = val;
+                return $el.css(css);
+              }
             }
           });
         };
