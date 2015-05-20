@@ -2,14 +2,6 @@ html,
 body {
   background: #fafafa;
 }
-#debug {
-  white-space: pre;
-  margin-top: 40px;
-}
-#debug th {
-  text-align: right;
-  padding-right: 10px;
-}
 main {
   padding-top: 20px;
   padding-bottom: 50px;
@@ -27,65 +19,78 @@ main {
   position: relative;
   z-index: 20;
 }
-#target_slide {
-  overflow: hidden;
+#debug {
+  white-space: pre;
+  margin-top: 40px;
 }
-#target_slide .outer,
-#target_slide .outer div {
-  color: #FFF;
-  position: relative;
-  height: 100px;
-  font-size: 20px;
-  line-height: 20px;
+#debug th {
+  text-align: right;
+  padding-right: 10px;
 }
-#target_slide .outer {
-  background: #5E88BF;
-}
-#target_slide .outer strong {
-  position: absolute;
-  top: 50%;
-  margin-top: -20px;
-  right: 10px;
-}
-#target_slide .outer span {
-  font-size: 15px;
-  position: absolute;
-  top: 50%;
-  margin-top: 5px;
-  right: 10px;
-}
-#target_slide .outer div {
-  position: relative;
-  background: #5480b7;
-  transition: width 500ms ease-out;
-  min-width: 85px;
-}
-#target_slide .outer div + div {
-  top: -100px;
-  background: #4D78B0;
-}
-.neg {
-  color: #721D1D;
-}
-.pos {
-  color: #9CD8AB;
-}
-.adjusters {
-  margin: 40px 0;
+#stats {
   display: -webkit-box;
   display: -moz-box;
   display: -ms-flexbox;
   display: flex;
+  -webkit-flex-flow: row wrap;
+  justify-content: space-around;
+  margin: 20px 0;
 }
-.adjusters > div {
-  flex: 1 100%;
-  padding: 10px;
+#stats > div {
+  width: 15%;
+  margin: 0.5%;
+  text-align: center;
 }
-.adjusters label {
+#stats > div h3 {
+  border-radius: 6px;
+  font-size: 36px;
+  margin: 0;
+}
+#stats > div small {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  display: block;
+  text-transform: uppercase;
+  color: #d0d0d0;
+}
+#adjusters {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-flow: row wrap;
+  justify-content: space-around;
+  margin: 20px 0;
+}
+#adjusters > div {
+  width: 23%;
+  margin: 1%;
+}
+#adjusters label {
   display: block;
   margin-top: 20px;
   color: #999;
 }
-.adjusters label span {
+#adjusters label span {
   color: #222;
+}
+.neg {
+  color: #721d1d;
+}
+.pos {
+  color: #9cd8ab;
+}
+.flex {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-flow: row wrap;
+  justify-content: space-around;
+}
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

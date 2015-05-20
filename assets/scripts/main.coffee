@@ -143,29 +143,28 @@ window.Site =
 
   displayData: ->
     @slides = []
-    @addTargetSlide()
+    @createTargetSlide()
 
     @addSlidesToContent()
     @addSlickCarousel()
+    @addStats()
     @addAdjustersToContent()
     @recalculateValues()
     @addDebug()
     @toggleContent()
 
 
-  addTargetSlide: ->
+  # hours to hit target today
+  # avg to hit target by eom
+
+
+  createTargetSlide: ->
     slide = $('<div id="target_slide"/>')
 
-    slideOuter = $('<div class="outer"/>')
-      .append('<strong data-targetAvg>')
-      .append('<span>target avg</span>')
-    slideInner1 = $('<div data-percentageTodayAvg=width>')
-      .append('<strong><b data-todayAvg/> <small data-avgPercentageChange></strong>')
-      .append('<span>current avg</span>')
-    slideInner2 = $('<div data-percentageTodayToTargetAvg=width>')
-      .append('<strong data-hoursTodayToTargetAvg/>')
-      .append('<span>hours left</span>')
-    slide.append(slideOuter.append(slideInner1).append(slideInner2))
+    @slides.push slide
+
+  createTargetSlide2: ->
+    slide = $('<div id="target_slide"/>')
 
     @slides.push slide
 
@@ -191,8 +190,51 @@ window.Site =
       localStorage.setItem('lastSlickIndex', currentSlide)
 
 
+  addStats: ->
+    $stats = $('<div id="stats">')
+
+    # current avg
+    $todayAvg = $('<div>')
+    $todayAvg.append $('<h3 data-todayAvg>')
+    $todayAvg.append $('<small>Current Avg</small>')
+    $stats.append $todayAvg
+
+    # % change from yesterday's avg
+    $changeInAvg = $('<div>')
+    $changeInAvg.append $('<h3 data-avgPercentageChange>')
+    $changeInAvg.append $('<small>Avg % Change</small>')
+    $stats.append $changeInAvg
+
+    # todays hours logged
+    $todaysHours = $('<div>')
+    $todaysHours.append $('<h3 data-todaysHours>')
+    $todaysHours.append $('<small>Today\'s Hours</small>')
+    $stats.append $todaysHours
+
+    # total hours logged
+    $totalHours = $('<div>')
+    $totalHours.append $('<h3 data-totalHours>')
+    $totalHours.append $('<small>' + moment().format('MMMM') + ' Hours</small>')
+    $stats.append $totalHours
+
+    # Days worked
+    $workDaysWorked = $('<div>')
+    $workDaysWorked.append $('<h3 data-workDaysWorked>')
+    $workDaysWorked.append $('<small>Days Worked</small>')
+    $stats.append $workDaysWorked
+
+    # Days left
+    $workDaysLeft = $('<div>')
+    $workDaysLeft.append $('<h3 data-workDaysLeft>')
+    $workDaysLeft.append $('<small>Work Days Left</small>')
+    $stats.append $workDaysLeft
+
+    @$content.append $stats
+
+
+
   addAdjustersToContent: ->
-    $adjusters = $('<div class="adjusters">')
+    $adjusters = $('<div id="adjusters">')
 
     labelTargetHours = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>')
       .append('<span data-targetHours>')
@@ -254,12 +296,16 @@ window.Site =
       'hoursTodayToTargetAvg'
       'totalHoursTodayToTargetAvg'
       'targetHours'
+      'totalHours'
+      'todaysHours'
       'targetAvg'
       'todayAvg'
       'percentageTodayAvg'
       'avgPercentageChange'
       'daysOff'
       'takenDaysOff'
+      'workDaysWorked'
+      'workDaysLeft'
     ]
 
     _.each boundVariables, (variable) =>

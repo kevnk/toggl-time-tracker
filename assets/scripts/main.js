@@ -142,21 +142,23 @@
     },
     displayData: function() {
       this.slides = [];
-      this.addTargetSlide();
+      this.createTargetSlide();
       this.addSlidesToContent();
       this.addSlickCarousel();
+      this.addStats();
       this.addAdjustersToContent();
       this.recalculateValues();
       this.addDebug();
       return this.toggleContent();
     },
-    addTargetSlide: function() {
-      var slide, slideInner1, slideInner2, slideOuter;
+    createTargetSlide: function() {
+      var slide;
       slide = $('<div id="target_slide"/>');
-      slideOuter = $('<div class="outer"/>').append('<strong data-targetAvg>').append('<span>target avg</span>');
-      slideInner1 = $('<div data-percentageTodayAvg=width>').append('<strong><b data-todayAvg/> <small data-avgPercentageChange></strong>').append('<span>current avg</span>');
-      slideInner2 = $('<div data-percentageTodayToTargetAvg=width>').append('<strong data-hoursTodayToTargetAvg/>').append('<span>hours left</span>');
-      slide.append(slideOuter.append(slideInner1).append(slideInner2));
+      return this.slides.push(slide);
+    },
+    createTargetSlide2: function() {
+      var slide;
+      slide = $('<div id="target_slide"/>');
       return this.slides.push(slide);
     },
     addSlidesToContent: function() {
@@ -183,9 +185,38 @@
         return localStorage.setItem('lastSlickIndex', currentSlide);
       });
     },
+    addStats: function() {
+      var $changeInAvg, $stats, $todayAvg, $todaysHours, $totalHours, $workDaysLeft, $workDaysWorked;
+      $stats = $('<div id="stats">');
+      $todayAvg = $('<div>');
+      $todayAvg.append($('<h3 data-todayAvg>'));
+      $todayAvg.append($('<small>Current Avg</small>'));
+      $stats.append($todayAvg);
+      $changeInAvg = $('<div>');
+      $changeInAvg.append($('<h3 data-avgPercentageChange>'));
+      $changeInAvg.append($('<small>Avg % Change</small>'));
+      $stats.append($changeInAvg);
+      $todaysHours = $('<div>');
+      $todaysHours.append($('<h3 data-todaysHours>'));
+      $todaysHours.append($('<small>Today\'s Hours</small>'));
+      $stats.append($todaysHours);
+      $totalHours = $('<div>');
+      $totalHours.append($('<h3 data-totalHours>'));
+      $totalHours.append($('<small>' + moment().format('MMMM') + ' Hours</small>'));
+      $stats.append($totalHours);
+      $workDaysWorked = $('<div>');
+      $workDaysWorked.append($('<h3 data-workDaysWorked>'));
+      $workDaysWorked.append($('<small>Days Worked</small>'));
+      $stats.append($workDaysWorked);
+      $workDaysLeft = $('<div>');
+      $workDaysLeft.append($('<h3 data-workDaysLeft>'));
+      $workDaysLeft.append($('<small>Work Days Left</small>'));
+      $stats.append($workDaysLeft);
+      return this.$content.append($stats);
+    },
     addAdjustersToContent: function() {
       var $adjusters, labelDaysOff, labelTakenDaysOff, labelTargetHours, rangeDaysOff, rangeTakenDaysOff, rangeTargetHours;
-      $adjusters = $('<div class="adjusters">');
+      $adjusters = $('<div id="adjusters">');
       labelTargetHours = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>').append('<span data-targetHours>');
       rangeTargetHours = $('<input type=range id=target_hours min=100 value=' + this.targetHours + ' max=200 step=1>');
       rangeTargetHours.on('input', (function(_this) {
@@ -237,7 +268,7 @@
       localStorage.setItem('lastTakenDaysOff', this.lastTakenDaysOff);
       this.calculateVariables();
       this.addDebug();
-      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'targetAvg', 'todayAvg', 'percentageTodayAvg', 'avgPercentageChange', 'daysOff', 'takenDaysOff'];
+      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'totalHours', 'todaysHours', 'targetAvg', 'todayAvg', 'percentageTodayAvg', 'avgPercentageChange', 'daysOff', 'takenDaysOff', 'workDaysWorked', 'workDaysLeft'];
       return _.each(boundVariables, (function(_this) {
         return function(variable) {
           return $('[data-' + variable + ']').each(function(i, el) {

@@ -1,14 +1,13 @@
+@color-dark-blue: #0D3973;
+@color-light-blue: #5681B8;
+@color-red: #721D1D;
+@color-green: #9CD8AB;
+@color-yellow: #F2CD5E;
+
+// Scaffold
+
 html, body {
   background: #fafafa;
-}
-
-#debug {
-  white-space: pre;
-  margin-top: 40px;
-  th {
-    text-align: right;
-    padding-right: 10px;
-  }
 }
 
 main {
@@ -31,61 +30,50 @@ main {
   z-index: 20;
 }
 
-#target_slide {
-  overflow: hidden;
-  .outer,
-  .outer div {
-    color: #FFF;
-    position: relative;
-    height: 100px;
-    font-size: 20px;
-    line-height: 20px;
-  }
-  .outer {
-    background: #5E88BF;
-    strong {
-      position: absolute;
-      top: 50%;
-      margin-top: -20px;
-      right: 10px;
-    }
-    span {
-      font-size: 15px;
-      position: absolute;
-      top: 50%;
-      margin-top: 5px;
-      right: 10px;
-    }
-    div {
-      position: relative;
-      background: darken(#5681B8, 0.5%);
-      transition: width 500ms ease-out;
-      min-width: 85px;
-    }
-    div + div {
-      top: -100px;
-      background: #4D78B0;
-    }
+#debug {
+  white-space: pre;
+  margin-top: 40px;
+  th {
+    text-align: right;
+    padding-right: 10px;
   }
 }
 
-.neg {
-  color: #721D1D;
-}
-.pos {
-  color: #9CD8AB;
+// Main content
+
+#slides {
+
 }
 
-
-.adjusters {
-  margin: 40px 0;
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: flex;
+#stats {
+  .flex;
+  margin: 20px 0;
   > div {
-      flex: 1 100%;
-      padding: 10px;
+    width: 15%;
+    margin: 0.5%;
+    text-align: center;
+    h3 {
+      border-radius: 6px;
+      font-size: 36px;
+      margin: 0;
+    }
+    small {
+      margin-top: 8px;
+      font-size: 14px;
+      line-height: 20px;
+      display: block;
+      text-transform: uppercase;
+      color: darken(#f6f6f6, 15%);
+    }
+  }
+}
+
+#adjusters {
+  .flex;
+  margin: 20px 0;
+  > div {
+    width: 23%;
+    margin: 1%;
   }
   label {
     display: block;
@@ -95,4 +83,26 @@ main {
       color: #222;
     }
   }
+}
+
+// Utilities
+.neg {
+  color: @color-red;
+}
+.pos {
+  color: @color-green;
+}
+.flex {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-flow: row wrap;
+  justify-content: space-around;
+}
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
 }
