@@ -7,7 +7,6 @@ window.Site =
     if location.search
       document.location = location.origin + location.pathname
 
-    # @attachVacationsDays()
     @getData()
     @attachAutoRefresh()
 
@@ -68,29 +67,14 @@ window.Site =
 
 
   calculateVariables: ->
-    # # Vacations
-    # @isVacationDay = _.some _.filter @savedVacations, (vacation) =>
-    #   if @holidaysByName[vacation]
-    #     @holidaysByName[vacation].date.format('YYYYMMDD') is @today.format('YYYYMMDD')
-    #   else
-    #     false
-
-    # @vacationDaysRemaining = _.size _.filter @savedVacations, (vacation) =>
-    #   if @holidaysByName[vacation]
-    #     @holidaysByName[vacation].date > @today
-    #   else
-    #     true
-
-    # @vacationDaysSpent = _.size(@savedVacations) - @vacationDaysRemaining
-
-    @isWorkDay = @isWeekday # and not @isVacationDay
+    @isWorkDay = @isWeekday
 
     @daysOff = @daysOff || @lastDaysOff
     @takenDaysOff = @takenDaysOff || @lastTakenDaysOff
     @workDaysTotal = @bom.weekDays( @eom ) - @daysOff
-    @workDaysWorked = @bom.weekDays( @today ) - 2 - @takenDaysOff # - @vacationDaysSpent
+    @workDaysWorked = @bom.weekDays( @today ) - 2 - @takenDaysOff
     @workDaysWorked++ if @isWorkDay
-    @workDaysLeft = @workDaysTotal - @workDaysWorked # - @vacationDaysRemaining
+    @workDaysLeft = @workDaysTotal - @workDaysWorked
 
     @todayAvg = Math.round( @totalHours / @workDaysWorked * 100 ) / 100
     @yesterdayAvg = @todayAvg
@@ -300,63 +284,6 @@ window.Site =
           addPercent = method is 'width' || _.contains(['avgPercentageChange'], variable)
           val += '%' if addPercent
           $el[method] val
-
-
-  attachVacationsDays: ->
-    # _.each @holidays, (holiday) =>
-    #   checkedAttr = if holiday.checked then ' checked' else ''
-    #   @$holidays.find('form').append('
-    #     <div class="checkbox">
-    #       <label class="btn btn-default"><input' + checkedAttr + ' data-name="' + holiday.name + '" type="checkbox"/> ' + holiday.name +
-    #         '&nbsp;&nbsp;<span>' + holiday.date.format('ddd, MMM Do') + '<span>
-    #       </label>
-    #     </div>')
-
-    # @$holidays.find('input').on 'change', =>
-    #   @storeVacationDays()
-    #   @calculateVariables()
-    #   @displayData()
-
-    # # Manually add/subtract vacation days
-    # form = @$holidays.find('form')
-    # $minusBtn = @$holidays.find('#minus_vacation_day')
-    # $plusBtn = @$holidays.find('#plus_vacation_day')
-
-    # addManualVacationInput = ->
-    #   form.append($('<div class="hide checkbox">
-    #   <input checked type="checkbox" data-name="' + moment().format('YYYYMMDDhhmmss') + '"/>
-    #   </div>'))
-
-    # # Find manually added vacations and add hidden inputs
-    # manualVacations = _.filter @savedVacations, (vacation) -> /\d/.test(vacation)
-    # _.each manualVacations, addManualVacationInput
-
-    # $plusBtn.on 'click', (e) =>
-    #   addManualVacationInput()
-    #   $minusBtn.removeClass('hide')
-    #   @storeVacationDays()
-    #   @calculateVariables()
-    #   @displayData()
-
-    # $minusBtn.on 'click', (e) =>
-    #   $minusBtn.addClass('hide') unless form.find('.checkbox.hide').size() >= 2
-    #   form.find('.checkbox.hide').first().remove()
-    #   @storeVacationDays()
-    #   @calculateVariables()
-    #   @displayData()
-
-    # $minusBtn.addClass('hide') if form.find('.checkbox.hide').size() < 1
-
-
-  storeVacationDays: ->
-    # vacations = [];
-    # @$holidays.find('input[type=checkbox]:checked').each ->
-    #   $el = $(this)
-    #   vacations.push($el.data('name'))
-
-    # @savedVacations = vacations
-    # localStorage.setItem('vacations', vacations.join(','))
-    return
 
 
   attachAutoRefresh: ->

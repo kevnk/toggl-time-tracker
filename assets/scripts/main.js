@@ -268,8 +268,6 @@
         };
       })(this));
     },
-    attachVacationsDays: function() {},
-    storeVacationDays: function() {},
     attachAutoRefresh: function() {
       this.autoUpdate = 0;
       this.autoTimer = moment();
