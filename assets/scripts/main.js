@@ -38,28 +38,6 @@
       this.isTheFirst = this.today.date() === this.bom.date();
       this.isTheLast = this.today.date() === this.eom.date();
       this.isWeekday = this.today.isWeekDay();
-      this.isHoliday = this.today.holiday();
-      this.savedVacations = localStorage.getItem('vacations') ? localStorage.getItem('vacations').split(',') : [];
-      this.holidays = [];
-      this.holidaysByName = {};
-      moment().range(this.bom._d, this.eom._d).by('days', (function(_this) {
-        return function(moment) {
-          var holiday, holidayObj;
-          if (!moment.isWeekDay()) {
-            return;
-          }
-          holiday = moment.holiday();
-          if (!_.isUndefined(holiday)) {
-            holidayObj = {
-              name: holiday,
-              date: moment,
-              checked: _.contains(_this.savedVacations, holiday)
-            };
-            _this.holidays.push(holidayObj);
-            return _this.holidaysByName[holiday] = holidayObj;
-          }
-        };
-      })(this));
       this.lastTargetHours = localStorage.getItem('lastTargetHours') || 140;
       this.lastDaysOff = localStorage.getItem('lastDaysOff') || 0;
       return this.lastTakenDaysOff = localStorage.getItem('lastTakenDaysOff') || 0;

@@ -44,22 +44,6 @@ window.Site =
     @isTheFirst = @today.date() is @bom.date()
     @isTheLast = @today.date() is @eom.date()
     @isWeekday = @today.isWeekDay()
-    @isHoliday = @today.holiday()
-
-    @savedVacations = if localStorage.getItem('vacations') then localStorage.getItem('vacations').split(',') else []
-    @holidays = [];
-    @holidaysByName = {}
-    moment().range(@bom._d, @eom._d).by 'days', (moment) =>
-      return unless moment.isWeekDay()
-      holiday = moment.holiday();
-      unless _.isUndefined(holiday)
-        holidayObj =
-          name: holiday
-          date: moment
-          checked: _.contains( @savedVacations, holiday )
-
-        @holidays.push holidayObj
-        @holidaysByName[holiday] = holidayObj
 
     @lastTargetHours = localStorage.getItem('lastTargetHours') || 140
     @lastDaysOff = localStorage.getItem('lastDaysOff') || 0
