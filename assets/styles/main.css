@@ -4,9 +4,15 @@ body {
 }
 #debug {
   white-space: pre;
+  margin-top: 40px;
+}
+#debug th {
+  text-align: right;
+  padding-right: 10px;
 }
 main {
   padding-top: 20px;
+  padding-bottom: 50px;
   position: relative;
 }
 .loading {
@@ -15,6 +21,11 @@ main {
   right: 0;
   left: 0;
   position: absolute;
+  z-index: 10;
+}
+#content {
+  position: relative;
+  z-index: 20;
 }
 #target_slide {
   overflow: hidden;
@@ -53,25 +64,28 @@ main {
   top: -100px;
   background: #4D78B0;
 }
-#target_slide .outer .neg {
+.neg {
   color: #721D1D;
 }
-#target_slide .outer .pos {
+.pos {
   color: #9CD8AB;
 }
-#target_slide .outer ~ div {
-  width: 49%;
-  margin-left: 2%;
-  float: left;
+.adjusters {
+  margin: 40px 0;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
 }
-#target_slide .outer + div {
-  margin-left: 0;
+.adjusters > div {
+  flex: 1 100%;
+  padding: 10px;
 }
-#target_slide label {
+.adjusters label {
   display: block;
   margin-top: 20px;
   color: #999;
 }
-#target_slide label span {
+.adjusters label span {
   color: #222;
 }

@@ -1,4 +1,4 @@
-Site =
+window.Site =
   init: () ->
     @setLocalData(false)
     @documentTitle = document.title
@@ -64,6 +64,7 @@ Site =
 
     @lastTargetHours = localStorage.getItem('lastTargetHours') || 140
     @lastDaysOff = localStorage.getItem('lastDaysOff') || 0
+    @lastTakenDaysOff = localStorage.getItem('lastTakenDaysOff') || 0
 
 
   calculateVariables: ->
@@ -85,11 +86,11 @@ Site =
     @isWorkDay = @isWeekday # and not @isVacationDay
 
     @daysOff = @daysOff || @lastDaysOff
+    @takenDaysOff = @takenDaysOff || @lastTakenDaysOff
     @workDaysTotal = @bom.weekDays( @eom ) - @daysOff
-    @workDaysWorked = @bom.weekDays( @today ) # - @vacationDaysSpent
+    @workDaysWorked = @bom.weekDays( @today ) - 2 - @takenDaysOff # - @vacationDaysSpent
     @workDaysWorked++ if @isWorkDay
     @workDaysLeft = @workDaysTotal - @workDaysWorked # - @vacationDaysRemaining
-    # @workDaysLeftTomorrow = if @isWorkDay then @workDaysLeft - 1 else @workDaysLeft
 
     @todayAvg = Math.round( @totalHours / @workDaysWorked * 100 ) / 100
     @yesterdayAvg = @todayAvg
@@ -162,6 +163,7 @@ Site =
 
     @addSlidesToContent()
     @addSlickCarousel()
+    @addAdjustersToContent()
     @recalculateValues()
     @addDebug()
     @toggleContent()
@@ -180,27 +182,6 @@ Site =
       .append('<strong data-hoursTodayToTargetAvg/>')
       .append('<span>hours left</span>')
     slide.append(slideOuter.append(slideInner1).append(slideInner2))
-
-
-    labelTargetHours = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>')
-      .append('<span data-targetHours>')
-    rangeTargetHours = $('<input type=range id=target_hours min=100 value=' + @targetHours + ' max=200 step=1>')
-    rangeTargetHours.on 'input', =>
-      @targetHours = rangeTargetHours.val()
-      @recalculateValues()
-
-    slide.append $('<div>').append(labelTargetHours).append(rangeTargetHours)
-
-
-    labelDaysOff = $('<label for=days_off>Remaining Days Off: </label>')
-      .append('<span data-daysOff>')
-    rangeDaysOff = $('<input type=range id=days_off min=0 value=' + @daysOff + ' max=15 step=1>')
-    rangeDaysOff.on 'input', =>
-      @daysOff = rangeDaysOff.val()
-      @recalculateValues()
-
-    slide.append $('<div>').append(labelDaysOff).append(rangeDaysOff)
-
 
     @slides.push slide
 
@@ -226,6 +207,41 @@ Site =
       localStorage.setItem('lastSlickIndex', currentSlide)
 
 
+  addAdjustersToContent: ->
+    $adjusters = $('<div class="adjusters">')
+
+    labelTargetHours = $('<label for=target_hours>Target Hours for ' + moment().format('MMMM') + ': </label>')
+      .append('<span data-targetHours>')
+    rangeTargetHours = $('<input type=range id=target_hours min=100 value=' + @targetHours + ' max=200 step=1>')
+    rangeTargetHours.on 'input', =>
+      @targetHours = rangeTargetHours.val()
+      @recalculateValues()
+
+    $adjusters.append $('<div>').append(labelTargetHours).append(rangeTargetHours)
+
+
+    labelDaysOff = $('<label for=days_off>Remaining Days Off: </label>')
+      .append('<span data-daysOff>')
+    rangeDaysOff = $('<input type=range id=days_off min=0 value=' + @daysOff + ' max=15 step=1>')
+    rangeDaysOff.on 'input', =>
+      @daysOff = rangeDaysOff.val()
+      @recalculateValues()
+
+    $adjusters.append $('<div>').append(labelDaysOff).append(rangeDaysOff)
+
+
+    labelTakenDaysOff = $('<label for=taken_days_off>Used Days Off: </label>')
+      .append('<span data-takenDaysOff>')
+    rangeTakenDaysOff = $('<input type=range id=taken_days_off min=0 value=' + @takenDaysOff + ' max=15 step=1>')
+    rangeTakenDaysOff.on 'input', =>
+      @takenDaysOff = rangeTakenDaysOff.val()
+      @recalculateValues()
+
+    $adjusters.append $('<div>').append(labelTakenDaysOff).append(rangeTakenDaysOff)
+
+
+    @$content.append $adjusters
+
   toggleContent: (show=true) ->
     if show
       @$loader.addClass('fade')
@@ -242,6 +258,9 @@ Site =
     @lastDaysOff = @daysOff
     localStorage.setItem('lastDaysOff', @lastDaysOff)
 
+    @lastTakenDaysOff = @takenDaysOff
+    localStorage.setItem('lastTakenDaysOff', @lastTakenDaysOff)
+
     # RECALCULATE
     @calculateVariables()
     @addDebug()
@@ -256,6 +275,7 @@ Site =
       'percentageTodayAvg'
       'avgPercentageChange'
       'daysOff'
+      'takenDaysOff'
     ]
 
     _.each boundVariables, (variable) =>
@@ -369,7 +389,7 @@ Site =
     # console.clear() if @$debug
     console.log('%c ===========================================================', 'color:red')
     console.log('%c ===========================================================', 'color:red')
-    @$debug = @$debug || $('body').append('<div id="debug" class="container">').find('#debug')
+    @$debug = @$debug || $('body').append('<pre id="debug" class="container"><table><tbody/></table></pre>').find('#debug tbody')
     @$debug.html('')
 
     console.log('%c DEBUG: Site -->', 'color:#F80', Site)
@@ -378,11 +398,11 @@ Site =
         if _.isObject(item)
           if item._isAMomentObject
             # console.log('%c DEBUG: ' + key + ' -->', 'color:#F80', item)
-            @$debug.append '<strong>' + key + ' (Moment):</strong> ' + item.format('MM/DD/YYYY hh:mm:ssa') + '<br>'
+            @$debug.append '<tr><th>' + key + ' (Moment):</th><td>' + item.format('MM/DD/YYYY hh:mm:ssa') + '</td></tr>'
           else
             console.log('%c DEBUG: ' + key + ' -->', 'color:#F80', item)
         else
-          @$debug.append '<strong>' + key + ':</strong> ' + item + '<br>'
+          @$debug.append '<tr><th>' + key + ':</th><td>' + item + '</td></tr>'
 
 
 Site.init()
