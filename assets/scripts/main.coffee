@@ -77,7 +77,7 @@ window.Site =
     @targetHours = @targetHours || @lastTargetHours
     @targetAvg = @round (@targetHours / @workDaysTotal)
 
-    @hoursTodayToTargetAvg = @round ((@targetAvg * @workDaysWorked) - @totalHours)
+    @hoursTodayToTargetAvg = @round ((@targetAvg * @workDaysWorkedToday) - @totalHours)
     # @hoursTodayToTargetAvg = '✓' if @hoursTodayToTargetAvg <= 0
 
     @totalHoursTodayToTargetAvg = @round (@hoursTodayToTargetAvg + @todaysHours)
@@ -234,15 +234,15 @@ window.Site =
     $stats.append $todayAvg
 
     # current avg
-    $avgTodayToEomTarget = $('<div>')
-    $avgTodayToEomTarget.append $('<h3 data-avgTodayToEomTarget>')
-    $avgTodayToEomTarget.append $('<small>Avg To EOM Target</small>')
-    $stats.append $avgTodayToEomTarget
+    $targetAvg = $('<div>')
+    $targetAvg.append $('<h3 data-targetAvg>')
+    $targetAvg.append $('<small>Target Avg</small>')
+    $stats.append $targetAvg
 
-    # % change from yesterday's avg
+    # # change from yesterday's avg
     # $changeInAvg = $('<div>')
     # $changeInAvg.append $('<h3 data-avgPercentageChange>')
-    # $changeInAvg.append $('<small>Avg % Change From Yesterday</small>')
+    # $changeInAvg.append $('<small>Today\'s Avg Change</small>')
     # $stats.append $changeInAvg
 
     # Days worked

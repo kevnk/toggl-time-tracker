@@ -61,7 +61,7 @@
       this.avgPercentageChange = this.round((this.todayAvg - this.yesterdayAvg) / this.yesterdayAvg, true);
       this.targetHours = this.targetHours || this.lastTargetHours;
       this.targetAvg = this.round(this.targetHours / this.workDaysTotal);
-      this.hoursTodayToTargetAvg = this.round((this.targetAvg * this.workDaysWorked) - this.totalHours);
+      this.hoursTodayToTargetAvg = this.round((this.targetAvg * this.workDaysWorkedToday) - this.totalHours);
       this.totalHoursTodayToTargetAvg = this.round(this.hoursTodayToTargetAvg + this.todaysHours);
       this.percentageTodayToTargetAvg = this.round(this.todaysHours / this.totalHoursTodayToTargetAvg, true);
       this.totalHoursLeftToEomTarget = this.round(this.targetHours - this.totalHours);
@@ -192,7 +192,7 @@
       });
     },
     addStats: function() {
-      var $avgTodayToEomTarget, $stats, $todayAvg, $todaysHours, $totalHours, $workDaysLeft, $workDaysWorked;
+      var $stats, $targetAvg, $todayAvg, $todaysHours, $totalHours, $workDaysLeft, $workDaysWorked;
       $stats = $('<div id="stats">');
       $todaysHours = $('<div>');
       $todaysHours.append($('<h3 data-todaysHours>'));
@@ -206,10 +206,10 @@
       $todayAvg.append($('<h3 data-todayAvg>'));
       $todayAvg.append($('<small>Current Avg</small>'));
       $stats.append($todayAvg);
-      $avgTodayToEomTarget = $('<div>');
-      $avgTodayToEomTarget.append($('<h3 data-avgTodayToEomTarget>'));
-      $avgTodayToEomTarget.append($('<small>Avg To EOM Target</small>'));
-      $stats.append($avgTodayToEomTarget);
+      $targetAvg = $('<div>');
+      $targetAvg.append($('<h3 data-targetAvg>'));
+      $targetAvg.append($('<small>Target Avg</small>'));
+      $stats.append($targetAvg);
       $workDaysWorked = $('<div>');
       $workDaysWorked.append($('<h3 data-workDaysWorked>'));
       $workDaysWorked.append($('<small>Days Worked</small>'));
