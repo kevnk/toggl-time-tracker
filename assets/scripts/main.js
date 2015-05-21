@@ -192,7 +192,7 @@
       });
     },
     addStats: function() {
-      var $stats, $targetAvg, $todayAvg, $todaysHours, $totalHours, $workDaysLeft, $workDaysWorked;
+      var $stats, $targetAvg, $todayAvg, $todaysHours, $totalHours, $workDaysLeft, $workDaysWorkedToday;
       $stats = $('<div id="stats">');
       $todaysHours = $('<div>');
       $todaysHours.append($('<h3 data-todaysHours>'));
@@ -210,10 +210,10 @@
       $targetAvg.append($('<h3 data-targetAvg>'));
       $targetAvg.append($('<small>Target Avg</small>'));
       $stats.append($targetAvg);
-      $workDaysWorked = $('<div>');
-      $workDaysWorked.append($('<h3 data-workDaysWorked>'));
-      $workDaysWorked.append($('<small>Days Worked</small>'));
-      $stats.append($workDaysWorked);
+      $workDaysWorkedToday = $('<div>');
+      $workDaysWorkedToday.append($('<h3 data-workDaysWorkedToday>'));
+      $workDaysWorkedToday.append($('<small>Days Worked</small>'));
+      $stats.append($workDaysWorkedToday);
       $workDaysLeft = $('<div>');
       $workDaysLeft.append($('<h3 data-workDaysLeft>'));
       $workDaysLeft.append($('<small>Work Days Left</small>'));
@@ -274,7 +274,7 @@
       localStorage.setItem('lastTakenDaysOff', this.lastTakenDaysOff);
       this.calculateVariables();
       this.addDebug();
-      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'totalHours', 'todaysHours', 'targetAvg', 'todayAvg', 'percentageTodayAvg', 'avgPercentageChange', 'daysOff', 'takenDaysOff', 'workDaysWorked', 'workDaysLeft', 'hoursTodayToEomTargetAvg', 'percentageTodayToEomTargetAvg', 'avgTodayToEomTarget'];
+      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'totalHours', 'todaysHours', 'targetAvg', 'todayAvg', 'percentageTodayAvg', 'avgPercentageChange', 'daysOff', 'takenDaysOff', 'workDaysWorked', 'workDaysWorkedToday', 'workDaysLeft', 'hoursTodayToEomTargetAvg', 'percentageTodayToEomTargetAvg', 'avgTodayToEomTarget'];
       return _.each(boundVariables, (function(_this) {
         return function(variable) {
           return $('[data-' + variable + ']').each(function(i, el) {

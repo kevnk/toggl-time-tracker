@@ -246,10 +246,10 @@ window.Site =
     # $stats.append $changeInAvg
 
     # Days worked
-    $workDaysWorked = $('<div>')
-    $workDaysWorked.append $('<h3 data-workDaysWorked>')
-    $workDaysWorked.append $('<small>Days Worked</small>')
-    $stats.append $workDaysWorked
+    $workDaysWorkedToday = $('<div>')
+    $workDaysWorkedToday.append $('<h3 data-workDaysWorkedToday>')
+    $workDaysWorkedToday.append $('<small>Days Worked</small>')
+    $stats.append $workDaysWorkedToday
 
     # Days left
     $workDaysLeft = $('<div>')
@@ -333,6 +333,7 @@ window.Site =
       'daysOff'
       'takenDaysOff'
       'workDaysWorked'
+      'workDaysWorkedToday'
       'workDaysLeft'
       'hoursTodayToEomTargetAvg'
       'percentageTodayToEomTargetAvg'
