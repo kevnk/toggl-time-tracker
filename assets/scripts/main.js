@@ -43,33 +43,43 @@
       return this.lastTakenDaysOff = localStorage.getItem('lastTakenDaysOff') || 0;
     },
     calculateVariables: function() {
-      var workDaysLeft;
       this.isWorkDay = this.isWeekday;
       this.daysOff = this.daysOff || this.lastDaysOff;
       this.takenDaysOff = this.takenDaysOff || this.lastTakenDaysOff;
-      this.workDaysTotal = this.bom.weekDays(this.eom) - this.daysOff;
-      this.workDaysWorked = this.bom.weekDays(this.today) - this.takenDaysOff;
-      if (this.isWorkDay) {
-        this.workDaysWorked++;
-      }
-      this.workDaysLeft = this.workDaysTotal - this.workDaysWorked;
-      this.todayAvg = Math.round(this.totalHours / this.workDaysWorked * 100) / 100;
+      this.totalWeekDays = this.bom.weekDays(this.eom);
+      this.weekDaysToToday = this.bom.weekDays(this.today);
+      this.weekDaysToEom = this.eom.weekDays(this.today);
+      this.workDaysTotal = this.totalWeekDays - this.daysOff;
+      this.workDaysWorkedToday = this.weekDaysToToday - this.takenDaysOff;
+      this.workDaysWorked = this.isWorkDay ? this.workDaysWorkedToday - 1 : this.workDaysWorkedToday;
+      this.workDaysLeft = this.weekDaysToEom - this.daysOff;
+      this.todayAvg = this.round(this.totalHours / this.workDaysWorkedToday);
       this.yesterdayAvg = this.todayAvg;
-      if (this.isWorkDay) {
-        this.yesterdayAvg = Math.round((this.totalHours - this.todaysHours) / (this.workDaysWorked - 1) * 100) / 100;
+      if (this.todaysHours) {
+        this.yesterdayAvg = this.round((this.totalHours - this.todaysHours) / this.workDaysWorked);
       }
-      this.avgPercentageChange = Math.round((this.todayAvg - this.yesterdayAvg) / this.yesterdayAvg * 100);
+      this.avgPercentageChange = this.round((this.todayAvg - this.yesterdayAvg) / this.yesterdayAvg, true);
       this.targetHours = this.targetHours || this.lastTargetHours;
-      this.targetAvg = Math.round(this.targetHours / this.workDaysTotal * 100) / 100;
-      this.hoursTodayToTargetAvg = Math.round(((this.targetAvg * this.workDaysWorked) - this.totalHours) * 100) / 100;
-      this.totalHoursTodayToTargetAvg = Math.round((this.hoursTodayToTargetAvg + this.todaysHours) * 100) / 100;
-      this.percentageTodayToTargetAvg = Math.round(this.todaysHours / this.totalHoursTodayToTargetAvg * 100);
-      this.totalHoursLeftToEomTarget = Math.round((this.targetHours - this.totalHours) * 100) / 100;
-      workDaysLeft = this.isWorkDay ? this.workDaysLeft + 1 : this.workDaysLeft;
-      this.avgTodayToEomTarget = Math.round(this.totalHoursLeftToEomTarget / workDaysLeft * 100) / 100;
-      this.hoursTodayToEomTargetAvg = Math.round((this.avgTodayToEomTarget - this.todaysHours) * 100) / 100;
-      this.percentageTodayToEomTargetAvg = Math.round((this.todaysHours / this.avgTodayToEomTarget) * 100);
-      this.percentageTodayAvg = Math.round(this.todayAvg / this.targetAvg * 100);
+      this.targetAvg = this.round(this.targetHours / this.workDaysTotal);
+      this.hoursTodayToTargetAvg = this.round((this.targetAvg * this.workDaysWorked) - this.totalHours);
+      this.totalHoursTodayToTargetAvg = this.round(this.hoursTodayToTargetAvg + this.todaysHours);
+      this.percentageTodayToTargetAvg = this.round(this.todaysHours / this.totalHoursTodayToTargetAvg, true);
+      this.totalHoursLeftToEomTarget = this.round(this.targetHours - this.totalHours);
+      this.avgTodayToEomTarget = this.round(this.totalHoursLeftToEomTarget / this.workDaysLeft);
+      this.hoursTodayToEomTargetAvg = this.round(this.avgTodayToEomTarget - this.todaysHours);
+      this.percentageTodayToEomTargetAvg = this.round(this.todaysHours / this.avgTodayToEomTarget, true);
+      this.percentageTodayAvg = this.round(this.todayAvg / this.targetAvg, true);
+    },
+    round: function(val, isPercent) {
+      var result;
+      if (isPercent == null) {
+        isPercent = false;
+      }
+      result = Math.round(val * 100);
+      if (!isPercent) {
+        result = result / 100;
+      }
+      return result;
     },
     getData: function() {
       var qSince, qToday, qUntil, that;

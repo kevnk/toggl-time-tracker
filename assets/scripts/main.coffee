@@ -55,37 +55,52 @@ window.Site =
 
     @daysOff = @daysOff || @lastDaysOff
     @takenDaysOff = @takenDaysOff || @lastTakenDaysOff
-    @workDaysTotal = @bom.weekDays( @eom ) - @daysOff
-    @workDaysWorked = @bom.weekDays( @today ) - @takenDaysOff
-    @workDaysWorked++ if @isWorkDay
-    @workDaysLeft = @workDaysTotal - @workDaysWorked
 
-    @todayAvg = Math.round( @totalHours / @workDaysWorked * 100 ) / 100
+    @totalWeekDays = @bom.weekDays( @eom )
+    @weekDaysToToday = @bom.weekDays( @today )
+    @weekDaysToEom = @eom.weekDays( @today )
+
+
+    @workDaysTotal = @totalWeekDays - @daysOff
+    @workDaysWorkedToday = @weekDaysToToday - @takenDaysOff # Includes today
+    @workDaysWorked = if @isWorkDay then @workDaysWorkedToday - 1 else @workDaysWorkedToday
+
+    @workDaysLeft = @weekDaysToEom - @daysOff
+
+    @todayAvg = @round (@totalHours / @workDaysWorkedToday)
     @yesterdayAvg = @todayAvg
-    if @isWorkDay
-      @yesterdayAvg = Math.round( (@totalHours - @todaysHours) / (@workDaysWorked - 1) * 100 ) / 100
+    if @todaysHours
+      @yesterdayAvg = @round ((@totalHours - @todaysHours) / (@workDaysWorked))
 
-    @avgPercentageChange = Math.round( (@todayAvg - @yesterdayAvg) / @yesterdayAvg * 100 )
+    @avgPercentageChange = @round ((@todayAvg - @yesterdayAvg) / @yesterdayAvg), true
 
     @targetHours = @targetHours || @lastTargetHours
-    @targetAvg = Math.round( @targetHours / @workDaysTotal * 100 ) / 100
+    @targetAvg = @round (@targetHours / @workDaysTotal)
 
-    @hoursTodayToTargetAvg = Math.round( ((@targetAvg * @workDaysWorked) - @totalHours) * 100 ) / 100
-    @totalHoursTodayToTargetAvg = Math.round( (@hoursTodayToTargetAvg + @todaysHours) * 100 ) / 100
-    @percentageTodayToTargetAvg = Math.round( @todaysHours / @totalHoursTodayToTargetAvg * 100 )
+    @hoursTodayToTargetAvg = @round ((@targetAvg * @workDaysWorked) - @totalHours)
+    # @hoursTodayToTargetAvg = '✓' if @hoursTodayToTargetAvg <= 0
 
-    @totalHoursLeftToEomTarget = Math.round( (@targetHours - @totalHours) * 100 ) / 100
-    # @avgTodayToEomTarget = Math.round( @targetHours / @workDaysTotal * 100 ) / 100
-    workDaysLeft = if @isWorkDay then @workDaysLeft + 1 else @workDaysLeft
-    @avgTodayToEomTarget = Math.round( @totalHoursLeftToEomTarget / workDaysLeft * 100 ) / 100
-    @hoursTodayToEomTargetAvg = Math.round( (@avgTodayToEomTarget - @todaysHours) * 100 ) / 100
-    @percentageTodayToEomTargetAvg = Math.round( (@todaysHours / @avgTodayToEomTarget) * 100 )
+    @totalHoursTodayToTargetAvg = @round (@hoursTodayToTargetAvg + @todaysHours)
+    @percentageTodayToTargetAvg = @round (@todaysHours / @totalHoursTodayToTargetAvg), true
 
-    @percentageTodayAvg = Math.round( @todayAvg / @targetAvg * 100 )
+    @totalHoursLeftToEomTarget = @round (@targetHours - @totalHours)
+    @avgTodayToEomTarget = @round (@totalHoursLeftToEomTarget / @workDaysLeft)
+    @hoursTodayToEomTargetAvg = @round (@avgTodayToEomTarget - @todaysHours)
+    @percentageTodayToEomTargetAvg = @round (@todaysHours / @avgTodayToEomTarget), true
+
+    # @avgTodayToEomTarget = '✓' if @todayAvg > @targetAvg
+    # @hoursTodayToEomTargetAvg = '✓' if @todayAvg > @targetAvg
+    # @percentageTodayToEomTargetAvg = 100 if @todayAvg > @targetAvg
+
+    @percentageTodayAvg = @round (@todayAvg / @targetAvg), true
 
 
     return
 
+  round: (val, isPercent = false) ->
+    result = Math.round( val * 100 )
+    result = result / 100 unless isPercent
+    result
 
   getData: ->
     qSince = @bom.format('YYYY-MM-DD')
