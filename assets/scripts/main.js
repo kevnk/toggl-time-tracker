@@ -53,6 +53,10 @@
       this.workDaysWorkedToday = this.weekDaysToToday - this.takenDaysOff;
       this.workDaysWorked = this.isWorkDay ? this.workDaysWorkedToday - 1 : this.workDaysWorkedToday;
       this.workDaysLeft = this.weekDaysToEom - this.daysOff;
+      if (this.isTheFirst) {
+        this.workDaysWorked = 0;
+        this.workDaysWorkedToday = this.isWorkDay ? 1 : 0;
+      }
       this.todayAvg = this.round(this.totalHours / this.workDaysWorkedToday);
       this.yesterdayAvg = this.todayAvg;
       if (this.todaysHours) {

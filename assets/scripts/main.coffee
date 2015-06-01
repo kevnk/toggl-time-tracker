@@ -60,12 +60,15 @@ window.Site =
     @weekDaysToToday = @bom.weekDays( @today )
     @weekDaysToEom = @eom.weekDays( @today )
 
-
     @workDaysTotal = @totalWeekDays - @daysOff
     @workDaysWorkedToday = @weekDaysToToday - @takenDaysOff # Includes today
     @workDaysWorked = if @isWorkDay then @workDaysWorkedToday - 1 else @workDaysWorkedToday
 
     @workDaysLeft = @weekDaysToEom - @daysOff
+
+    if @isTheFirst
+      @workDaysWorked = 0
+      @workDaysWorkedToday = if @isWorkDay then 1 else 0
 
     @todayAvg = @round (@totalHours / @workDaysWorkedToday)
     @yesterdayAvg = @todayAvg
