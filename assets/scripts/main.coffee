@@ -56,8 +56,8 @@ window.Site =
     @daysOff = @daysOff || @lastDaysOff
     @takenDaysOff = @takenDaysOff || @lastTakenDaysOff
 
-    @totalWeekDays = @bom.weekDays( @eom )
-    @weekDaysToToday = @bom.weekDays( @today )
+    @totalWeekDays = @bom.weekDays( @eom ) + 1
+    @weekDaysToToday = @bom.weekDays( @today ) + 1
     @weekDaysToEom = @eom.weekDays( @today )
 
     @workDaysTotal = @totalWeekDays - @daysOff

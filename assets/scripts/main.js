@@ -46,8 +46,8 @@
       this.isWorkDay = this.isWeekday;
       this.daysOff = this.daysOff || this.lastDaysOff;
       this.takenDaysOff = this.takenDaysOff || this.lastTakenDaysOff;
-      this.totalWeekDays = this.bom.weekDays(this.eom);
-      this.weekDaysToToday = this.bom.weekDays(this.today);
+      this.totalWeekDays = this.bom.weekDays(this.eom) + 1;
+      this.weekDaysToToday = this.bom.weekDays(this.today) + 1;
       this.weekDaysToEom = this.eom.weekDays(this.today);
       this.workDaysTotal = this.totalWeekDays - this.daysOff;
       this.workDaysWorkedToday = this.weekDaysToToday - this.takenDaysOff;
