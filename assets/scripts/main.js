@@ -48,7 +48,7 @@
       this.takenDaysOff = this.takenDaysOff || this.lastTakenDaysOff;
       this.totalWeekDays = this.bom.weekDays(this.eom) + 1;
       this.weekDaysToToday = this.bom.weekDays(this.today) + 1;
-      this.weekDaysToEom = this.eom.weekDays(this.today);
+      this.weekDaysToEom = this.eom.weekDays(this.today) + 1;
       this.workDaysTotal = this.totalWeekDays - this.daysOff;
       this.workDaysWorkedToday = this.weekDaysToToday - this.takenDaysOff;
       this.workDaysWorked = this.isWorkDay ? this.workDaysWorkedToday - 1 : this.workDaysWorkedToday;
@@ -140,8 +140,6 @@
     },
     displayData: function() {
       this.slides = [];
-      this.createTargetTodaySlide();
-      this.createTargetEomSlide();
       this.addSlidesToContent();
       this.addSlickCarousel();
       this.addStats();
@@ -150,6 +148,8 @@
       this.addDebug();
       return this.toggleContent();
     },
+
+    /* SLIDES */
     createTargetTodaySlide: function() {
       var $hoursToTarget, $outer, $slide;
       $slide = $('<div class="hoursTodayToTargetAvg_slide"/>');
@@ -195,8 +195,10 @@
         return localStorage.setItem('lastSlickIndex', currentSlide);
       });
     },
+
+    /* STATS */
     addStats: function() {
-      var $stats, $targetAvg, $todayAvg, $todaysHours, $totalHours, $workDaysLeft, $workDaysWorkedToday;
+      var $stats, $todaysHours, $totalHours, $totalHoursLeftToEomTarget;
       $stats = $('<div id="stats">');
       $todaysHours = $('<div>');
       $todaysHours.append($('<h3 data-todaysHours>'));
@@ -206,26 +208,16 @@
       $totalHours.append($('<h3 data-totalHours>'));
       $totalHours.append($('<small>' + moment().format('MMMM') + ' Hours</small>'));
       $stats.append($totalHours);
-      $todayAvg = $('<div>');
-      $todayAvg.append($('<h3 data-todayAvg>'));
-      $todayAvg.append($('<small>Current Avg</small>'));
-      $stats.append($todayAvg);
-      $targetAvg = $('<div>');
-      $targetAvg.append($('<h3 data-targetAvg>'));
-      $targetAvg.append($('<small>Target Avg</small>'));
-      $stats.append($targetAvg);
-      $workDaysWorkedToday = $('<div>');
-      $workDaysWorkedToday.append($('<h3 data-workDaysWorkedToday>'));
-      $workDaysWorkedToday.append($('<small>Days Worked</small>'));
-      $stats.append($workDaysWorkedToday);
-      $workDaysLeft = $('<div>');
-      $workDaysLeft.append($('<h3 data-workDaysLeft>'));
-      $workDaysLeft.append($('<small>Work Days Left</small>'));
-      $stats.append($workDaysLeft);
+      $totalHoursLeftToEomTarget = $('<div>');
+      $totalHoursLeftToEomTarget.append($('<h3 data-totalHoursLeftToEomTarget>'));
+      $totalHoursLeftToEomTarget.append($('<small>Hours Left</small>'));
+      $stats.append($totalHoursLeftToEomTarget);
       return this.$content.append($stats);
     },
+
+    /* ADJUSTERS */
     addAdjustersToContent: function() {
-      var $adjusters, labelDaysOff, labelTakenDaysOff, labelTargetHours, rangeDaysOff, rangeTakenDaysOff, rangeTargetHours;
+      var $adjusters, labelTargetHours, rangeTargetHours;
       $adjusters = $('<div id="adjusters">');
       labelTargetHours = $('<label for=targetHours_adjuster>Target Hours for ' + moment().format('MMMM') + ': </label>').append('<span data-targetHours>');
       rangeTargetHours = $('<input type=range id=targetHours_adjuster min=100 value=' + this.targetHours + ' max=200 step=1>');
@@ -236,26 +228,10 @@
         };
       })(this));
       $adjusters.append($('<div>').append(labelTargetHours).append(rangeTargetHours));
-      labelDaysOff = $('<label for=daysOff_adjuster>Remaining Days Off: </label>').append('<span data-daysOff>');
-      rangeDaysOff = $('<input type=range id=daysOff_adjuster min=0 value=' + this.daysOff + ' max=15 step=1>');
-      rangeDaysOff.on('input', (function(_this) {
-        return function() {
-          _this.daysOff = rangeDaysOff.val();
-          return _this.recalculateValues();
-        };
-      })(this));
-      $adjusters.append($('<div>').append(labelDaysOff).append(rangeDaysOff));
-      labelTakenDaysOff = $('<label for=takenDaysOff_adjuster>Used Days Off: </label>').append('<span data-takenDaysOff>');
-      rangeTakenDaysOff = $('<input type=range id=takenDaysOff_adjuster min=0 value=' + this.takenDaysOff + ' max=15 step=1>');
-      rangeTakenDaysOff.on('input', (function(_this) {
-        return function() {
-          _this.takenDaysOff = rangeTakenDaysOff.val();
-          return _this.recalculateValues();
-        };
-      })(this));
-      $adjusters.append($('<div>').append(labelTakenDaysOff).append(rangeTakenDaysOff));
       return this.$content.append($adjusters);
     },
+
+    /* UTILITIES */
     toggleContent: function(show) {
       if (show == null) {
         show = true;
@@ -278,7 +254,7 @@
       localStorage.setItem('lastTakenDaysOff', this.lastTakenDaysOff);
       this.calculateVariables();
       this.addDebug();
-      boundVariables = ['percentageTodayToTargetAvg', 'hoursTodayToTargetAvg', 'totalHoursTodayToTargetAvg', 'targetHours', 'totalHours', 'todaysHours', 'targetAvg', 'todayAvg', 'percentageTodayAvg', 'avgPercentageChange', 'daysOff', 'takenDaysOff', 'workDaysWorked', 'workDaysWorkedToday', 'workDaysLeft', 'hoursTodayToEomTargetAvg', 'percentageTodayToEomTargetAvg', 'avgTodayToEomTarget'];
+      boundVariables = ['avgPercentageChange', 'avgTodayToEomTarget', 'daysOff', 'hoursTodayToEomTargetAvg', 'hoursTodayToTargetAvg', 'percentageTodayAvg', 'percentageTodayToEomTargetAvg', 'percentageTodayToTargetAvg', 'takenDaysOff', 'targetAvg', 'targetHours', 'todayAvg', 'todaysHours', 'totalHours', 'totalHoursLeftToEomTarget', 'totalHoursTodayToTargetAvg', 'workDaysLeft', 'workDaysWorked', 'workDaysWorkedToday'];
       return _.each(boundVariables, (function(_this) {
         return function(variable) {
           return $('[data-' + variable + ']').each(function(i, el) {
@@ -350,6 +326,7 @@
       }
     },
     addDebug: function() {
+      return;
       if (location.host !== 'localhost') {
         return;
       }

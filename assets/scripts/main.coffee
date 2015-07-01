@@ -58,7 +58,8 @@ window.Site =
 
     @totalWeekDays = @bom.weekDays( @eom ) + 1
     @weekDaysToToday = @bom.weekDays( @today ) + 1
-    @weekDaysToEom = @eom.weekDays( @today )
+    @weekDaysToEom = @eom.weekDays( @today ) + 1
+    # @weekDaysToEom++ if @isTheFirst and @isWorkDay
 
     @workDaysTotal = @totalWeekDays - @daysOff
     @workDaysWorkedToday = @weekDaysToToday - @takenDaysOff # Includes today
@@ -151,8 +152,8 @@ window.Site =
 
   displayData: ->
     @slides = []
-    @createTargetTodaySlide()
-    @createTargetEomSlide()
+    # @createTargetTodaySlide()
+    # @createTargetEomSlide()
 
     @addSlidesToContent()
     @addSlickCarousel()
@@ -162,11 +163,7 @@ window.Site =
     @addDebug()
     @toggleContent()
 
-
-  # hours to hit target today
-  # avg to hit target by eom
-
-
+  ### SLIDES ###
   createTargetTodaySlide: ->
     $slide = $('<div class="hoursTodayToTargetAvg_slide"/>')
     $slide.append $('<h1>Hit Target Avg Today</h1>')
@@ -214,56 +211,62 @@ window.Site =
     @$slides.on 'afterChange', (event, slick, currentSlide) ->
       localStorage.setItem('lastSlickIndex', currentSlide)
 
-
+  ### STATS ###
   addStats: ->
     $stats = $('<div id="stats">')
 
-    # todays hours logged
+    # Todays Hours Logged
     $todaysHours = $('<div>')
     $todaysHours.append $('<h3 data-todaysHours>')
     $todaysHours.append $('<small>Today\'s Hours</small>')
     $stats.append $todaysHours
 
-    # total hours logged
+    # Total Hours Logged
     $totalHours = $('<div>')
     $totalHours.append $('<h3 data-totalHours>')
     $totalHours.append $('<small>' + moment().format('MMMM') + ' Hours</small>')
     $stats.append $totalHours
 
-    # current avg
-    $todayAvg = $('<div>')
-    $todayAvg.append $('<h3 data-todayAvg>')
-    $todayAvg.append $('<small>Current Avg</small>')
-    $stats.append $todayAvg
+    # Hours Left to Log
+    $totalHoursLeftToEomTarget = $('<div>')
+    $totalHoursLeftToEomTarget.append $('<h3 data-totalHoursLeftToEomTarget>')
+    $totalHoursLeftToEomTarget.append $('<small>Hours Left</small>')
+    $stats.append $totalHoursLeftToEomTarget
 
-    # current avg
-    $targetAvg = $('<div>')
-    $targetAvg.append $('<h3 data-targetAvg>')
-    $targetAvg.append $('<small>Target Avg</small>')
-    $stats.append $targetAvg
+    # # Current Avg
+    # $todayAvg = $('<div>')
+    # $todayAvg.append $('<h3 data-todayAvg>')
+    # $todayAvg.append $('<small>Current Avg</small>')
+    # $stats.append $todayAvg
 
-    # # change from yesterday's avg
+    # # Current Avg
+    # $targetAvg = $('<div>')
+    # $targetAvg.append $('<h3 data-targetAvg>')
+    # $targetAvg.append $('<small>Target Avg</small>')
+    # $stats.append $targetAvg
+
+    # # Change From Yesterday's Avg
     # $changeInAvg = $('<div>')
     # $changeInAvg.append $('<h3 data-avgPercentageChange>')
     # $changeInAvg.append $('<small>Today\'s Avg Change</small>')
     # $stats.append $changeInAvg
 
-    # Days worked
-    $workDaysWorkedToday = $('<div>')
-    $workDaysWorkedToday.append $('<h3 data-workDaysWorkedToday>')
-    $workDaysWorkedToday.append $('<small>Days Worked</small>')
-    $stats.append $workDaysWorkedToday
+    # # Days Worked
+    # $workDaysWorkedToday = $('<div>')
+    # $workDaysWorkedToday.append $('<h3 data-workDaysWorkedToday>')
+    # $workDaysWorkedToday.append $('<small>Days Worked</small>')
+    # $stats.append $workDaysWorkedToday
 
-    # Days left
-    $workDaysLeft = $('<div>')
-    $workDaysLeft.append $('<h3 data-workDaysLeft>')
-    $workDaysLeft.append $('<small>Work Days Left</small>')
-    $stats.append $workDaysLeft
+    # # Days Left
+    # $workDaysLeft = $('<div>')
+    # $workDaysLeft.append $('<h3 data-workDaysLeft>')
+    # $workDaysLeft.append $('<small>Work Days Left</small>')
+    # $stats.append $workDaysLeft
 
     @$content.append $stats
 
 
-
+  ### ADJUSTERS ###
   addAdjustersToContent: ->
     $adjusters = $('<div id="adjusters">')
 
@@ -277,28 +280,29 @@ window.Site =
     $adjusters.append $('<div>').append(labelTargetHours).append(rangeTargetHours)
 
 
-    labelDaysOff = $('<label for=daysOff_adjuster>Remaining Days Off: </label>')
-      .append('<span data-daysOff>')
-    rangeDaysOff = $('<input type=range id=daysOff_adjuster min=0 value=' + @daysOff + ' max=15 step=1>')
-    rangeDaysOff.on 'input', =>
-      @daysOff = rangeDaysOff.val()
-      @recalculateValues()
+    # labelDaysOff = $('<label for=daysOff_adjuster>Remaining Days Off: </label>')
+    #   .append('<span data-daysOff>')
+    # rangeDaysOff = $('<input type=range id=daysOff_adjuster min=0 value=' + @daysOff + ' max=15 step=1>')
+    # rangeDaysOff.on 'input', =>
+    #   @daysOff = rangeDaysOff.val()
+    #   @recalculateValues()
 
-    $adjusters.append $('<div>').append(labelDaysOff).append(rangeDaysOff)
+    # $adjusters.append $('<div>').append(labelDaysOff).append(rangeDaysOff)
 
 
-    labelTakenDaysOff = $('<label for=takenDaysOff_adjuster>Used Days Off: </label>')
-      .append('<span data-takenDaysOff>')
-    rangeTakenDaysOff = $('<input type=range id=takenDaysOff_adjuster min=0 value=' + @takenDaysOff + ' max=15 step=1>')
-    rangeTakenDaysOff.on 'input', =>
-      @takenDaysOff = rangeTakenDaysOff.val()
-      @recalculateValues()
+    # labelTakenDaysOff = $('<label for=takenDaysOff_adjuster>Used Days Off: </label>')
+    #   .append('<span data-takenDaysOff>')
+    # rangeTakenDaysOff = $('<input type=range id=takenDaysOff_adjuster min=0 value=' + @takenDaysOff + ' max=15 step=1>')
+    # rangeTakenDaysOff.on 'input', =>
+    #   @takenDaysOff = rangeTakenDaysOff.val()
+    #   @recalculateValues()
 
-    $adjusters.append $('<div>').append(labelTakenDaysOff).append(rangeTakenDaysOff)
+    # $adjusters.append $('<div>').append(labelTakenDaysOff).append(rangeTakenDaysOff)
 
 
     @$content.append $adjusters
 
+  ### UTILITIES ###
   toggleContent: (show=true) ->
     if show
       @$loader.removeClass('in')
@@ -323,24 +327,25 @@ window.Site =
     @addDebug()
 
     boundVariables = [
-      'percentageTodayToTargetAvg'
-      'hoursTodayToTargetAvg'
-      'totalHoursTodayToTargetAvg'
-      'targetHours'
-      'totalHours'
-      'todaysHours'
-      'targetAvg'
-      'todayAvg'
-      'percentageTodayAvg'
       'avgPercentageChange'
+      'avgTodayToEomTarget'
       'daysOff'
+      'hoursTodayToEomTargetAvg'
+      'hoursTodayToTargetAvg'
+      'percentageTodayAvg'
+      'percentageTodayToEomTargetAvg'
+      'percentageTodayToTargetAvg'
       'takenDaysOff'
+      'targetAvg'
+      'targetHours'
+      'todayAvg'
+      'todaysHours'
+      'totalHours'
+      'totalHoursLeftToEomTarget'
+      'totalHoursTodayToTargetAvg'
+      'workDaysLeft'
       'workDaysWorked'
       'workDaysWorkedToday'
-      'workDaysLeft'
-      'hoursTodayToEomTargetAvg'
-      'percentageTodayToEomTargetAvg'
-      'avgTodayToEomTarget'
     ]
 
     _.each boundVariables, (variable) =>
@@ -404,6 +409,7 @@ window.Site =
     if results is null then '' else decodeURIComponent(results[1].replace(/\+/g, " "))
 
   addDebug: ->
+    return
     return unless location.host is 'localhost'
     # console.clear() if @$debug
     console.log('%c ===========================================================', 'color:red')
