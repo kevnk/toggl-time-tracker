@@ -73,6 +73,7 @@
       this.hoursTodayToEomTargetAvg = this.round(this.avgTodayToEomTarget - this.todaysHours);
       this.percentageTodayToEomTargetAvg = this.round(this.todaysHours / this.avgTodayToEomTarget, true);
       this.percentageTodayAvg = this.round(this.todayAvg / this.targetAvg, true);
+      this.sevenHourDaysLogged = Math.floor(this.totalHours / 7);
     },
     round: function(val, isPercent) {
       var result;
@@ -198,7 +199,7 @@
 
     /* STATS */
     addStats: function() {
-      var $stats, $todaysHours, $totalHours, $totalHoursLeftToEomTarget;
+      var $sevenHourDaysLogged, $stats, $todaysHours, $totalHours, $totalHoursLeftToEomTarget;
       $stats = $('<div id="stats">');
       $todaysHours = $('<div>');
       $todaysHours.append($('<h3 data-todaysHours>'));
@@ -208,6 +209,10 @@
       $totalHours.append($('<h3 data-totalHours>'));
       $totalHours.append($('<small>' + moment().format('MMMM') + ' Hours</small>'));
       $stats.append($totalHours);
+      $sevenHourDaysLogged = $('<div>');
+      $sevenHourDaysLogged.append($('<h3 data-sevenHourDaysLogged>'));
+      $sevenHourDaysLogged.append($('<small>7hr Days Logged</small>'));
+      $stats.append($sevenHourDaysLogged);
       $totalHoursLeftToEomTarget = $('<div>');
       $totalHoursLeftToEomTarget.append($('<h3 data-totalHoursLeftToEomTarget>'));
       $totalHoursLeftToEomTarget.append($('<small>Hours Left</small>'));
@@ -254,7 +259,7 @@
       localStorage.setItem('lastTakenDaysOff', this.lastTakenDaysOff);
       this.calculateVariables();
       this.addDebug();
-      boundVariables = ['avgPercentageChange', 'avgTodayToEomTarget', 'daysOff', 'hoursTodayToEomTargetAvg', 'hoursTodayToTargetAvg', 'percentageTodayAvg', 'percentageTodayToEomTargetAvg', 'percentageTodayToTargetAvg', 'takenDaysOff', 'targetAvg', 'targetHours', 'todayAvg', 'todaysHours', 'totalHours', 'totalHoursLeftToEomTarget', 'totalHoursTodayToTargetAvg', 'workDaysLeft', 'workDaysWorked', 'workDaysWorkedToday'];
+      boundVariables = ['avgPercentageChange', 'avgTodayToEomTarget', 'daysOff', 'hoursTodayToEomTargetAvg', 'hoursTodayToTargetAvg', 'percentageTodayAvg', 'percentageTodayToEomTargetAvg', 'percentageTodayToTargetAvg', 'sevenHourDaysLogged', 'takenDaysOff', 'targetAvg', 'targetHours', 'todayAvg', 'todaysHours', 'totalHours', 'totalHoursLeftToEomTarget', 'totalHoursTodayToTargetAvg', 'workDaysLeft', 'workDaysWorked', 'workDaysWorkedToday'];
       return _.each(boundVariables, (function(_this) {
         return function(variable) {
           return $('[data-' + variable + ']').each(function(i, el) {

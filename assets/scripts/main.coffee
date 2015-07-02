@@ -98,6 +98,7 @@ window.Site =
 
     @percentageTodayAvg = @round (@todayAvg / @targetAvg), true
 
+    @sevenHourDaysLogged = Math.floor(@totalHours / 7)
 
     return
 
@@ -227,6 +228,12 @@ window.Site =
     $totalHours.append $('<small>' + moment().format('MMMM') + ' Hours</small>')
     $stats.append $totalHours
 
+    # 7 Hour Days Logged
+    $sevenHourDaysLogged = $('<div>')
+    $sevenHourDaysLogged.append $('<h3 data-sevenHourDaysLogged>')
+    $sevenHourDaysLogged.append $('<small>7hr Days Logged</small>')
+    $stats.append $sevenHourDaysLogged
+
     # Hours Left to Log
     $totalHoursLeftToEomTarget = $('<div>')
     $totalHoursLeftToEomTarget.append $('<h3 data-totalHoursLeftToEomTarget>')
@@ -335,6 +342,7 @@ window.Site =
       'percentageTodayAvg'
       'percentageTodayToEomTargetAvg'
       'percentageTodayToTargetAvg'
+      'sevenHourDaysLogged'
       'takenDaysOff'
       'targetAvg'
       'targetHours'
