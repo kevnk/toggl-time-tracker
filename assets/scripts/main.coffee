@@ -95,8 +95,8 @@ Site =
 
     @isWorkDay = @isWeekday and not @isVacationDay
 
-    @workDaysTotal = @bom.weekDays( @eom ) + 1
-    @workDaysWorked = @bom.weekDays( @today ) - @vacationDaysSpent
+    @workDaysTotal = moment(@eom._d).add(1, 'day').weekDays( @bom )
+    @workDaysWorked = @today.weekDays( @bom ) - @vacationDaysSpent
     @workDaysLeft = @workDaysTotal - @workDaysWorked - @vacationDaysRemaining
     @workDaysLeftTomorrow = if @isWorkDay then @workDaysLeft - 1 else @workDaysLeft
 
@@ -111,7 +111,7 @@ Site =
 
     @nmIsWorkDay = @nmIsWeekday and not @nmIsVacationDay
 
-    @nmWorkDaysTotal = @nmBom.weekDays( @nmEom ) + 1
+    @nmWorkDaysTotal = moment(@nmEom._d).add(1, 'day').weekDays( @nmBom )
     @nmWorkDaysWorked = 0
     @nmWorkDaysLeft = @nmWorkDaysTotal
     @nmWorkDaysLeftTomorrow = if @nmIsWorkDay then @nmWorkDaysLeft - 1 else @nmWorkDaysLeft
@@ -175,7 +175,8 @@ Site =
     $total.html @totalHours
 
     # CURRENT / avg as of yesterday
-    currentAvg = if @isTheFirst then @totalHours else (@totalHours - @todaysHours) / @workDaysWorked
+    # No weekdays worked yet (start of the month): show the hours logged so far
+    currentAvg = if @workDaysWorked > 0 then (@totalHours - @todaysHours) / @workDaysWorked else @totalHours
     currentAvg = Math.round(currentAvg * 10) / 10
     $current.html currentAvg
 
@@ -183,17 +184,18 @@ Site =
     $targetHrs.html @targetHrs
 
     # TARGET AVG TOMOROW
+    # With no work days left this month, all remaining hours land on the next day
     unless @isTheLast
-      targetAvg = Math.round((@targetHrs - @totalHours) / @workDaysLeftTomorrow * 10) / 10
+      targetAvg = Math.round((@targetHrs - @totalHours) / Math.max(@workDaysLeftTomorrow, 1) * 10) / 10
     else
       targetAvg = Math.round(@targetHrs / @nmWorkDaysLeftTomorrow * 10) / 10
     $target.html targetAvg
 
     # TARGET AVG TODAY
     unless @isTheFirst
-      targetAvgToday = Math.round((@targetHrs - @totalHours + @todaysHours) / @workDaysLeft * 10) / 10
+      targetAvgToday = Math.round((@targetHrs - @totalHours + @todaysHours) / Math.max(@workDaysLeft, 1) * 10) / 10
     else
-      targetAvgToday = Math.round((@targetHrs - @todaysHours) / @workDaysLeft * 10) / 10
+      targetAvgToday = Math.round((@targetHrs - @todaysHours) / Math.max(@workDaysLeft, 1) * 10) / 10
     $targetAvgToday.html targetAvgToday
 
     # TARGET TODAY

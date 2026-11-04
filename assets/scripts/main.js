@@ -100,8 +100,8 @@
       })(this)));
       this.vacationDaysSpent = _.size(this.savedVacations) - this.vacationDaysRemaining;
       this.isWorkDay = this.isWeekday && !this.isVacationDay;
-      this.workDaysTotal = this.bom.weekDays(this.eom) + 1;
-      this.workDaysWorked = this.bom.weekDays(this.today) - this.vacationDaysSpent;
+      this.workDaysTotal = moment(this.eom._d).add(1, 'day').weekDays(this.bom);
+      this.workDaysWorked = this.today.weekDays(this.bom) - this.vacationDaysSpent;
       this.workDaysLeft = this.workDaysTotal - this.workDaysWorked - this.vacationDaysRemaining;
       this.workDaysLeftTomorrow = this.isWorkDay ? this.workDaysLeft - 1 : this.workDaysLeft;
       this.nmIsVacationDay = _.some(_.filter(this.savedVacations, (function(_this) {
@@ -114,7 +114,7 @@
         };
       })(this)));
       this.nmIsWorkDay = this.nmIsWeekday && !this.nmIsVacationDay;
-      this.nmWorkDaysTotal = this.nmBom.weekDays(this.nmEom) + 1;
+      this.nmWorkDaysTotal = moment(this.nmEom._d).add(1, 'day').weekDays(this.nmBom);
       this.nmWorkDaysWorked = 0;
       this.nmWorkDaysLeft = this.nmWorkDaysTotal;
       return this.nmWorkDaysLeftTomorrow = this.nmIsWorkDay ? this.nmWorkDaysLeft - 1 : this.nmWorkDaysLeft;
@@ -181,20 +181,20 @@
       $clockOut = $('.clock-out-display');
       $vacation = $('.vacation-days-display');
       $total.html(this.totalHours);
-      currentAvg = this.isTheFirst ? this.totalHours : (this.totalHours - this.todaysHours) / this.workDaysWorked;
+      currentAvg = this.workDaysWorked > 0 ? (this.totalHours - this.todaysHours) / this.workDaysWorked : this.totalHours;
       currentAvg = Math.round(currentAvg * 10) / 10;
       $current.html(currentAvg);
       $targetHrs.html(this.targetHrs);
       if (!this.isTheLast) {
-        targetAvg = Math.round((this.targetHrs - this.totalHours) / this.workDaysLeftTomorrow * 10) / 10;
+        targetAvg = Math.round((this.targetHrs - this.totalHours) / Math.max(this.workDaysLeftTomorrow, 1) * 10) / 10;
       } else {
         targetAvg = Math.round(this.targetHrs / this.nmWorkDaysLeftTomorrow * 10) / 10;
       }
       $target.html(targetAvg);
       if (!this.isTheFirst) {
-        targetAvgToday = Math.round((this.targetHrs - this.totalHours + this.todaysHours) / this.workDaysLeft * 10) / 10;
+        targetAvgToday = Math.round((this.targetHrs - this.totalHours + this.todaysHours) / Math.max(this.workDaysLeft, 1) * 10) / 10;
       } else {
-        targetAvgToday = Math.round((this.targetHrs - this.todaysHours) / this.workDaysLeft * 10) / 10;
+        targetAvgToday = Math.round((this.targetHrs - this.todaysHours) / Math.max(this.workDaysLeft, 1) * 10) / 10;
       }
       $targetAvgToday.html(targetAvgToday);
       targetToday = Math.round((targetAvgToday - this.todaysHours) * 10) / 10;

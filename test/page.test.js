@@ -30,7 +30,7 @@ test('shows the day\'s targets from the month\'s logged hours', () => {
   assert.equal(page.window.document.title, '(5.6) Toggl Time Tracker');
 });
 
-test('Current AVG is hours before today divided by weekdays before today', { todo: 'weekDays() is called with its arguments reversed' }, () => {
+test('Current AVG is hours before today divided by weekdays before today', () => {
   assert.equal(shown(open(NOV_3), 'current-avg'), '8'); // 8h over 1 weekday
 });
 
@@ -144,6 +144,33 @@ test('a holiday checked last month is not a vacation day this month', { todo: 's
   const page = open({ now: at(2026, 12, 3), storage: { ...SETTINGS, vacations: 'Thanksgiving Day' }, toggl: { totalHours: 16, todayHours: 0 } });
   assert.equal(shown(page, 'vacation-days'), '0');
   assert.equal(shown(page, 'target-avg-today'), '6.9'); // 144 / 21
+});
+
+test('before the first weekday of the month, Current AVG is the hours logged so far', () => {
+  const page = open({ now: at(2026, 11, 2), toggl: { totalHours: 2, todayHours: 2 } }); // Mon after Sun Nov 1
+  assert.equal(shown(page, 'current-avg'), '2');
+});
+
+test('on the last weekday before a month-end weekend, Target Tomorrow is all the hours left', () => {
+  const page = open({ now: at(2026, 10, 30), toggl: { totalHours: 150, todayHours: 8 } }); // Fri; Oct 31 is Sat
+  assert.equal(shown(page, 'target-avg'), '10'); // 160 - 150
+  assert.equal(shown(page, 'target-avg-today'), '18'); // 160 - 142, over today only
+});
+
+test('every number is finite on the first and last days of each month', () => {
+  const bad = [];
+  for (let month = 1; month <= 24; month++) {
+    const last = new Date(2026, month, 0).getDate();
+    for (const date of [1, 2, 3, last - 3, last - 2, last - 1, last]) {
+      const now = at(2026, month, date);
+      const page = open({ now, toggl: { totalHours: 4 * date, todayHours: 2 } });
+      for (const name of ['target-today', 'target-avg-today', 'target-avg', 'current-avg']) {
+        if (!Number.isFinite(Number(shown(page, name)))) bad.push(`${now.toDateString()} ${name}=${shown(page, name)}`);
+      }
+      page.window.close();
+    }
+  }
+  assert.deepEqual(bad, []);
 });
 
 test('on the first of the month, Current AVG is today\'s hours', () => {
