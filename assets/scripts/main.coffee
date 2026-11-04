@@ -56,23 +56,19 @@ Site =
     @nmEom = moment(@tomorrow._d).date( @tomorrow.daysInMonth() )
 
     # Exception days
-    @isTheFirst = @today.date() is @bom.date()
     @isTheLast = @today.date() is @eom.date()
     @isWeekday = @today.isWeekDay()
-    @isHoliday = @today.holiday()
-    @nmIsWeekday = @tomorrow.isWeekDay()
-    @nmIsHoliday = @tomorrow.holiday()
 
     @savedVacations = if localStorage.getItem('vacations') then localStorage.getItem('vacations').split(',') else []
-    @holidays = [];
+    @holidays = []
     @holidaysByName = {}
-    moment().range(@bom._d, @eom._d).by 'days', (moment) =>
-      return unless moment.isWeekDay()
-      holiday = moment.holiday();
+    moment().range(@bom._d, @eom._d).by 'days', (day) =>
+      return unless day.isWeekDay()
+      holiday = day.holiday()
       unless _.isUndefined(holiday)
         holidayObj =
           name: holiday
-          date: moment
+          date: day
           checked: _.contains( @savedVacations, holiday )
 
         @holidays.push holidayObj
@@ -87,36 +83,31 @@ Site =
       else
         false
 
+    # Manual days (named by timestamp) count as upcoming. Any other name is a
+    # holiday from another month and doesn't count.
     @vacationDaysRemaining = _.size _.filter @savedVacations, (vacation) =>
       if @holidaysByName[vacation]
         @holidaysByName[vacation].date > @today
       else
-        true
+        /\d/.test(vacation)
 
-    @vacationDaysSpent = _.size(@savedVacations) - @vacationDaysRemaining
-
-    @isWorkDay = @isWeekday and not @isVacationDay
-
-    @workDaysTotal = @bom.weekDays( @eom ) + 1
-    @workDaysWorked = @bom.weekDays( @today ) - @vacationDaysSpent
-    @workDaysLeft = @workDaysTotal - @workDaysWorked - @vacationDaysRemaining
-    @workDaysLeftTomorrow = if @isWorkDay then @workDaysLeft - 1 else @workDaysLeft
-
-    # ----------------------------------------------------
-    # For last day of the month, calculate everything for next month (nm)
-    # ----------------------------------------------------
-    @nmIsVacationDay = _.some _.filter @savedVacations, (vacation) =>
+    @vacationDaysSpent = _.size _.filter @savedVacations, (vacation) =>
       if @holidaysByName[vacation]
-        @holidaysByName[vacation].date.format('YYYYMMDD') is @tomorrow.format('YYYYMMDD')
+        @holidaysByName[vacation].date < @today
       else
         false
 
-    @nmIsWorkDay = @nmIsWeekday and not @nmIsVacationDay
+    @isWorkDay = @isWeekday and not @isVacationDay
 
-    @nmWorkDaysTotal = @nmBom.weekDays( @nmEom ) + 1
-    @nmWorkDaysWorked = 0
-    @nmWorkDaysLeft = @nmWorkDaysTotal
-    @nmWorkDaysLeftTomorrow = if @nmIsWorkDay then @nmWorkDaysLeft - 1 else @nmWorkDaysLeft
+    @workDaysTotal = moment(@eom._d).add(1, 'day').weekDays( @bom )
+    weekDaysBeforeToday = @today.weekDays( @bom )
+    @workDaysWorked = weekDaysBeforeToday - @vacationDaysSpent
+    @workDaysLeft = @workDaysTotal - weekDaysBeforeToday - @vacationDaysRemaining - (if @isVacationDay then 1 else 0)
+    @workDaysLeftTomorrow = if @isWorkDay then @workDaysLeft - 1 else @workDaysLeft
+
+    # On the last day of the month, Target Tomorrow is for next month (nm),
+    # starting tomorrow
+    @nmWorkDaysTotal = moment(@nmEom._d).add(1, 'day').weekDays( @nmBom )
 
 
   getData: ->
@@ -126,7 +117,6 @@ Site =
     @detailsUrl = 'https://toggl.com/reports/api/v2/details?rounding=Off&status=active&user_ids=' + @userId + '&name=&billable=both&calculate=time&sortDirection=asc&sortBy=date&page=1&description=&since=' + qSince + '&until=' + qUntil + '&workspace_id=' + @workspaceId + '&period=thisMonth&with_total_currencies=1&grouping=&subgrouping=time_entries&order_field=date&order_desc=off&distinct_rates=Off&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token='
     @summaryUrl = 'https://toggl.com/reports/api/v2/summary.json?grouping=projects&subgrouping=time_entries&order_field=title&order_desc=off&rounding=Off&distinct_rates=Off&status=active&user_ids=' + @userId + '&name=&billable=both&workspace_id=' + @workspaceId + '&calculate=time&sortDirection=asc&sortBy=title&page=1&description=&since=' + qToday + '&until=' + qToday + '&period=today&with_total_currencies=1&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token='
 
-    that = this
     $('.loading').fadeIn('fast')
     $('.row.fade.in').removeClass('in')
     $.when(
@@ -158,7 +148,7 @@ Site =
       @totalHours = Math.round(@details.total_grand / 1000 / 60 / 60 * 10) / 10
       # Display data
       @displayData()
-    ).fail( =>
+    ).fail( ->
       $('.loading').removeClass('loading').addClass('error').html '<h1><span class="label label-danger">Error! Wrong credentials!</span></h1>
         <a class="btn btn-default" href="reset/">Try reseting your variables</a>'
     )
@@ -178,7 +168,8 @@ Site =
     $total.html @totalHours
 
     # CURRENT / avg as of yesterday
-    currentAvg = if @isTheFirst then @totalHours else (@totalHours - @todaysHours) / @workDaysWorked
+    # No weekdays worked yet (start of the month): show the hours logged so far
+    currentAvg = if @workDaysWorked > 0 then (@totalHours - @todaysHours) / @workDaysWorked else @totalHours
     currentAvg = Math.round(currentAvg * 10) / 10
     $current.html currentAvg
 
@@ -186,17 +177,15 @@ Site =
     $targetHrs.html @targetHrs
 
     # TARGET AVG TOMOROW
+    # With no work days left this month, all remaining hours land on the next day
     unless @isTheLast
-      targetAvg = Math.round((@targetHrs - @totalHours) / @workDaysLeftTomorrow * 10) / 10
+      targetAvg = Math.round((@targetHrs - @totalHours) / Math.max(@workDaysLeftTomorrow, 1) * 10) / 10
     else
-      targetAvg = Math.round(@targetHrs / @nmWorkDaysLeftTomorrow * 10) / 10
+      targetAvg = Math.round(@targetHrs / @nmWorkDaysTotal * 10) / 10
     $target.html targetAvg
 
     # TARGET AVG TODAY
-    unless @isTheFirst
-      targetAvgToday = Math.round((@targetHrs - @totalHours + @todaysHours) / @workDaysLeft * 10) / 10
-    else
-      targetAvgToday = Math.round((@targetHrs - @todaysHours) / @workDaysLeft * 10) / 10
+    targetAvgToday = Math.round((@targetHrs - @totalHours + @todaysHours) / Math.max(@workDaysLeft, 1) * 10) / 10
     $targetAvgToday.html targetAvgToday
 
     # TARGET TODAY
@@ -219,8 +208,6 @@ Site =
 
   displaySettings: ->
     $form = $('.menu form')
-    $inputs = $form.find('input')
-    $saveBtn = $form.find('button')
 
     $earnings = $('#earnings').val @targetEarnings
     $wage = $('#wage').val @wage
@@ -321,7 +308,7 @@ Site =
 
 
   storeVacationDays: ->
-    vacations = [];
+    vacations = []
     @$holidays.find('input[type=checkbox]:checked').each ->
       $el = $(this)
       vacations.push($el.data('name'))

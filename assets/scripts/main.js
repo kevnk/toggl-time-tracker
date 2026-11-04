@@ -53,26 +53,22 @@
       this.tomorrow = moment(this.today._d).add(1, 'day');
       this.nmBom = moment(this.tomorrow._d).date(1);
       this.nmEom = moment(this.tomorrow._d).date(this.tomorrow.daysInMonth());
-      this.isTheFirst = this.today.date() === this.bom.date();
       this.isTheLast = this.today.date() === this.eom.date();
       this.isWeekday = this.today.isWeekDay();
-      this.isHoliday = this.today.holiday();
-      this.nmIsWeekday = this.tomorrow.isWeekDay();
-      this.nmIsHoliday = this.tomorrow.holiday();
       this.savedVacations = localStorage.getItem('vacations') ? localStorage.getItem('vacations').split(',') : [];
       this.holidays = [];
       this.holidaysByName = {};
       return moment().range(this.bom._d, this.eom._d).by('days', (function(_this) {
-        return function(moment) {
+        return function(day) {
           var holiday, holidayObj;
-          if (!moment.isWeekDay()) {
+          if (!day.isWeekDay()) {
             return;
           }
-          holiday = moment.holiday();
+          holiday = day.holiday();
           if (!_.isUndefined(holiday)) {
             holidayObj = {
               name: holiday,
-              date: moment,
+              date: day,
               checked: _.contains(_this.savedVacations, holiday)
             };
             _this.holidays.push(holidayObj);
@@ -82,6 +78,7 @@
       })(this));
     },
     setCalculatedVariables: function() {
+      var weekDaysBeforeToday;
       this.isVacationDay = _.some(_.filter(this.savedVacations, (function(_this) {
         return function(vacation) {
           if (_this.holidaysByName[vacation]) {
@@ -96,39 +93,34 @@
           if (_this.holidaysByName[vacation]) {
             return _this.holidaysByName[vacation].date > _this.today;
           } else {
-            return true;
+            return /\d/.test(vacation);
           }
         };
       })(this)));
-      this.vacationDaysSpent = _.size(this.savedVacations) - this.vacationDaysRemaining;
-      this.isWorkDay = this.isWeekday && !this.isVacationDay;
-      this.workDaysTotal = this.bom.weekDays(this.eom) + 1;
-      this.workDaysWorked = this.bom.weekDays(this.today) - this.vacationDaysSpent;
-      this.workDaysLeft = this.workDaysTotal - this.workDaysWorked - this.vacationDaysRemaining;
-      this.workDaysLeftTomorrow = this.isWorkDay ? this.workDaysLeft - 1 : this.workDaysLeft;
-      this.nmIsVacationDay = _.some(_.filter(this.savedVacations, (function(_this) {
+      this.vacationDaysSpent = _.size(_.filter(this.savedVacations, (function(_this) {
         return function(vacation) {
           if (_this.holidaysByName[vacation]) {
-            return _this.holidaysByName[vacation].date.format('YYYYMMDD') === _this.tomorrow.format('YYYYMMDD');
+            return _this.holidaysByName[vacation].date < _this.today;
           } else {
             return false;
           }
         };
       })(this)));
-      this.nmIsWorkDay = this.nmIsWeekday && !this.nmIsVacationDay;
-      this.nmWorkDaysTotal = this.nmBom.weekDays(this.nmEom) + 1;
-      this.nmWorkDaysWorked = 0;
-      this.nmWorkDaysLeft = this.nmWorkDaysTotal;
-      return this.nmWorkDaysLeftTomorrow = this.nmIsWorkDay ? this.nmWorkDaysLeft - 1 : this.nmWorkDaysLeft;
+      this.isWorkDay = this.isWeekday && !this.isVacationDay;
+      this.workDaysTotal = moment(this.eom._d).add(1, 'day').weekDays(this.bom);
+      weekDaysBeforeToday = this.today.weekDays(this.bom);
+      this.workDaysWorked = weekDaysBeforeToday - this.vacationDaysSpent;
+      this.workDaysLeft = this.workDaysTotal - weekDaysBeforeToday - this.vacationDaysRemaining - (this.isVacationDay ? 1 : 0);
+      this.workDaysLeftTomorrow = this.isWorkDay ? this.workDaysLeft - 1 : this.workDaysLeft;
+      return this.nmWorkDaysTotal = moment(this.nmEom._d).add(1, 'day').weekDays(this.nmBom);
     },
     getData: function() {
-      var qSince, qToday, qUntil, that;
+      var qSince, qToday, qUntil;
       qSince = this.bom.format('YYYY-MM-DD');
       qUntil = this.eom.format('YYYY-MM-DD');
       qToday = this.today.format('YYYY-MM-DD');
       this.detailsUrl = 'https://toggl.com/reports/api/v2/details?rounding=Off&status=active&user_ids=' + this.userId + '&name=&billable=both&calculate=time&sortDirection=asc&sortBy=date&page=1&description=&since=' + qSince + '&until=' + qUntil + '&workspace_id=' + this.workspaceId + '&period=thisMonth&with_total_currencies=1&grouping=&subgrouping=time_entries&order_field=date&order_desc=off&distinct_rates=Off&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token=';
       this.summaryUrl = 'https://toggl.com/reports/api/v2/summary.json?grouping=projects&subgrouping=time_entries&order_field=title&order_desc=off&rounding=Off&distinct_rates=Off&status=active&user_ids=' + this.userId + '&name=&billable=both&workspace_id=' + this.workspaceId + '&calculate=time&sortDirection=asc&sortBy=title&page=1&description=&since=' + qToday + '&until=' + qToday + '&period=today&with_total_currencies=1&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token=';
-      that = this;
       $('.loading').fadeIn('fast');
       $('.row.fade.in').removeClass('in');
       return $.when($.ajax({
@@ -169,11 +161,9 @@
           _this.totalHours = Math.round(_this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
           return _this.displayData();
         };
-      })(this)).fail((function(_this) {
-        return function() {
-          return $('.loading').removeClass('loading').addClass('error').html('<h1><span class="label label-danger">Error! Wrong credentials!</span></h1> <a class="btn btn-default" href="reset/">Try reseting your variables</a>');
-        };
-      })(this));
+      })(this)).fail(function() {
+        return $('.loading').removeClass('loading').addClass('error').html('<h1><span class="label label-danger">Error! Wrong credentials!</span></h1> <a class="btn btn-default" href="reset/">Try reseting your variables</a>');
+      });
     },
     displayData: function() {
       var $clockOut, $current, $target, $targetAvgToday, $targetHrs, $targetToday, $total, $vacation, currentAvg, eod, targetAvg, targetAvgToday, targetToday;
@@ -186,21 +176,17 @@
       $clockOut = $('.clock-out-display');
       $vacation = $('.vacation-days-display');
       $total.html(this.totalHours);
-      currentAvg = this.isTheFirst ? this.totalHours : (this.totalHours - this.todaysHours) / this.workDaysWorked;
+      currentAvg = this.workDaysWorked > 0 ? (this.totalHours - this.todaysHours) / this.workDaysWorked : this.totalHours;
       currentAvg = Math.round(currentAvg * 10) / 10;
       $current.html(currentAvg);
       $targetHrs.html(this.targetHrs);
       if (!this.isTheLast) {
-        targetAvg = Math.round((this.targetHrs - this.totalHours) / this.workDaysLeftTomorrow * 10) / 10;
+        targetAvg = Math.round((this.targetHrs - this.totalHours) / Math.max(this.workDaysLeftTomorrow, 1) * 10) / 10;
       } else {
-        targetAvg = Math.round(this.targetHrs / this.nmWorkDaysLeftTomorrow * 10) / 10;
+        targetAvg = Math.round(this.targetHrs / this.nmWorkDaysTotal * 10) / 10;
       }
       $target.html(targetAvg);
-      if (!this.isTheFirst) {
-        targetAvgToday = Math.round((this.targetHrs - this.totalHours + this.todaysHours) / this.workDaysLeft * 10) / 10;
-      } else {
-        targetAvgToday = Math.round((this.targetHrs - this.todaysHours) / this.workDaysLeft * 10) / 10;
-      }
+      targetAvgToday = Math.round((this.targetHrs - this.totalHours + this.todaysHours) / Math.max(this.workDaysLeft, 1) * 10) / 10;
       $targetAvgToday.html(targetAvgToday);
       targetToday = Math.round((targetAvgToday - this.todaysHours) * 10) / 10;
       $targetToday.html(targetToday);
@@ -214,10 +200,8 @@
       });
     },
     displaySettings: function() {
-      var $apiKey, $earnings, $form, $inputs, $saveBtn, $userId, $wage, $workspaceId;
+      var $apiKey, $earnings, $form, $userId, $wage, $workspaceId;
       $form = $('.menu form');
-      $inputs = $form.find('input');
-      $saveBtn = $form.find('button');
       $earnings = $('#earnings').val(this.targetEarnings);
       $wage = $('#wage').val(this.wage);
       $userId = $('#userId').val(this.userId);

@@ -50,14 +50,17 @@
         return d.getMonth() === easter.getMonth() && d.getDate() === easter.getDate();
     }
 
+    // The Friday after the fourth Thursday of November
+    var _isDayAfterThanksgiving = function(d) {
+        return d.getMonth() === 10 && d.getDay() === 5 && d.getDate() >= 23 && d.getDate() <= 29;
+    }
+
     //Holiday definitions
     var _holidays = {
         'M': {//Month, Day
             '01/01': "New Year's Day",
             '07/04': "Independence Day",
             '11/11': "Veteran's Day",
-            '11/28': "Thanksgiving Day",
-            '11/29': "Day after Thanksgiving",
             '12/24': "Christmas Eve",
             '12/25': "Christmas Day",
             '12/31': "New Year's Eve"
@@ -72,20 +75,21 @@
         },
         'F': [
             { 'Easter': _isEaster },
-            { 'Good Friday': _isGoodFriday }
+            { 'Good Friday': _isGoodFriday },
+            { 'Day after Thanksgiving': _isDayAfterThanksgiving }
         ]
     };
 
     moment.fn.holiday = function() {
         var diff = 1+ (0 | (this._d.getDate() - 1) / 7),
-            memorial = (this._d.getDay() === 1 && (this._d.getDate() + 7) > 30) ? "5" : null,
+            memorial = (this._d.getDay() === 1 && (this._d.getDate() + 7) > 31) ? "5" : null,
             that = this;
 
 
         var checkFunctions = function() {
             for (var i = _holidays.F.length - 1; i >= 0; i--) {
                 var obj = _holidays.F[i];
-                for (prop in obj) {
+                for (var prop in obj) {
                     var func = obj[prop];
                     if(typeof func === 'function') {
                         if(func(that._d)) {

@@ -3,7 +3,7 @@
 # Extend Moment
 
 nearestPeriodicValue = (point, value, period) ->
-  value - period * Math.round((value - point) / period);
+  value - period * Math.round((value - point) / period)
 
 containedPeriodicValues = (start, end, value, period) ->
   # Inclusive start; exclusive end
