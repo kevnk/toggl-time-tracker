@@ -59,7 +59,6 @@ Site =
     @isTheFirst = @today.date() is @bom.date()
     @isTheLast = @today.date() is @eom.date()
     @isWeekday = @today.isWeekDay()
-    @nmIsWeekday = @tomorrow.isWeekDay()
 
     @savedVacations = if localStorage.getItem('vacations') then localStorage.getItem('vacations').split(',') else []
     @holidays = []
@@ -107,21 +106,9 @@ Site =
     @workDaysLeft = @workDaysTotal - weekDaysBeforeToday - @vacationDaysRemaining - (if @isVacationDay then 1 else 0)
     @workDaysLeftTomorrow = if @isWorkDay then @workDaysLeft - 1 else @workDaysLeft
 
-    # ----------------------------------------------------
-    # For last day of the month, calculate everything for next month (nm)
-    # ----------------------------------------------------
-    @nmIsVacationDay = _.some _.filter @savedVacations, (vacation) =>
-      if @holidaysByName[vacation]
-        @holidaysByName[vacation].date.format('YYYYMMDD') is @tomorrow.format('YYYYMMDD')
-      else
-        false
-
-    @nmIsWorkDay = @nmIsWeekday and not @nmIsVacationDay
-
+    # On the last day of the month, Target Tomorrow is for next month (nm),
+    # starting tomorrow
     @nmWorkDaysTotal = moment(@nmEom._d).add(1, 'day').weekDays( @nmBom )
-    @nmWorkDaysWorked = 0
-    @nmWorkDaysLeft = @nmWorkDaysTotal
-    @nmWorkDaysLeftTomorrow = if @nmIsWorkDay then @nmWorkDaysLeft - 1 else @nmWorkDaysLeft
 
 
   getData: ->
@@ -195,7 +182,7 @@ Site =
     unless @isTheLast
       targetAvg = Math.round((@targetHrs - @totalHours) / Math.max(@workDaysLeftTomorrow, 1) * 10) / 10
     else
-      targetAvg = Math.round(@targetHrs / @nmWorkDaysLeftTomorrow * 10) / 10
+      targetAvg = Math.round(@targetHrs / @nmWorkDaysTotal * 10) / 10
     $target.html targetAvg
 
     # TARGET AVG TODAY

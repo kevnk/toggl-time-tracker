@@ -191,7 +191,7 @@ test('on the last day of the month, today\'s target covers what is left', () => 
   assert.equal(shown(page, 'target-today'), '10');
 });
 
-test('on the last day of the month, Target Tomorrow spreads next month over all its weekdays', { todo: 'divides by next month\'s weekdays minus one' }, () => {
+test('on the last day of the month, Target Tomorrow spreads next month over all its weekdays', () => {
   const page = open({ now: at(2026, 11, 30), toggl: { totalHours: 150, todayHours: 8 } });
   assert.equal(shown(page, 'target-avg'), '7'); // 160 / 23
 });

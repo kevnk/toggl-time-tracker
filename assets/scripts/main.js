@@ -56,7 +56,6 @@
       this.isTheFirst = this.today.date() === this.bom.date();
       this.isTheLast = this.today.date() === this.eom.date();
       this.isWeekday = this.today.isWeekDay();
-      this.nmIsWeekday = this.tomorrow.isWeekDay();
       this.savedVacations = localStorage.getItem('vacations') ? localStorage.getItem('vacations').split(',') : [];
       this.holidays = [];
       this.holidaysByName = {};
@@ -114,20 +113,7 @@
       this.workDaysWorked = weekDaysBeforeToday - this.vacationDaysSpent;
       this.workDaysLeft = this.workDaysTotal - weekDaysBeforeToday - this.vacationDaysRemaining - (this.isVacationDay ? 1 : 0);
       this.workDaysLeftTomorrow = this.isWorkDay ? this.workDaysLeft - 1 : this.workDaysLeft;
-      this.nmIsVacationDay = _.some(_.filter(this.savedVacations, (function(_this) {
-        return function(vacation) {
-          if (_this.holidaysByName[vacation]) {
-            return _this.holidaysByName[vacation].date.format('YYYYMMDD') === _this.tomorrow.format('YYYYMMDD');
-          } else {
-            return false;
-          }
-        };
-      })(this)));
-      this.nmIsWorkDay = this.nmIsWeekday && !this.nmIsVacationDay;
-      this.nmWorkDaysTotal = moment(this.nmEom._d).add(1, 'day').weekDays(this.nmBom);
-      this.nmWorkDaysWorked = 0;
-      this.nmWorkDaysLeft = this.nmWorkDaysTotal;
-      return this.nmWorkDaysLeftTomorrow = this.nmIsWorkDay ? this.nmWorkDaysLeft - 1 : this.nmWorkDaysLeft;
+      return this.nmWorkDaysTotal = moment(this.nmEom._d).add(1, 'day').weekDays(this.nmBom);
     },
     getData: function() {
       var qSince, qToday, qUntil;
@@ -198,7 +184,7 @@
       if (!this.isTheLast) {
         targetAvg = Math.round((this.targetHrs - this.totalHours) / Math.max(this.workDaysLeftTomorrow, 1) * 10) / 10;
       } else {
-        targetAvg = Math.round(this.targetHrs / this.nmWorkDaysLeftTomorrow * 10) / 10;
+        targetAvg = Math.round(this.targetHrs / this.nmWorkDaysTotal * 10) / 10;
       }
       $target.html(targetAvg);
       if (!this.isTheFirst) {
