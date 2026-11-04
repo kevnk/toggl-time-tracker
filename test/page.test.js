@@ -195,3 +195,13 @@ test('on the last day of the month, Target Tomorrow spreads next month over all 
   const page = open({ now: at(2026, 11, 30), toggl: { totalHours: 150, todayHours: 8 } });
   assert.equal(shown(page, 'target-avg'), '7'); // 160 / 23
 });
+
+test('Save in the settings menu recalculates the targets without asking Toggl again', () => {
+  const page = open(NOV_3);
+  page.$('#earnings').val('9600');
+  page.$('.menu form').trigger('submit');
+  assert.equal(page.storage().earnings, '9600');
+  assert.equal(shown(page, 'target-hours'), '192'); // 9600 / 50
+  assert.equal(shown(page, 'target-avg-today'), '9.2'); // (192 - 8) / 20
+  assert.equal(page.requests.length, 2);
+});
