@@ -85,19 +85,26 @@ Site =
       else
         false
 
+    # Manual days (named by timestamp) count as upcoming. Any other name is a
+    # holiday from another month and doesn't count.
     @vacationDaysRemaining = _.size _.filter @savedVacations, (vacation) =>
       if @holidaysByName[vacation]
         @holidaysByName[vacation].date > @today
       else
-        true
+        /\d/.test(vacation)
 
-    @vacationDaysSpent = _.size(@savedVacations) - @vacationDaysRemaining
+    @vacationDaysSpent = _.size _.filter @savedVacations, (vacation) =>
+      if @holidaysByName[vacation]
+        @holidaysByName[vacation].date < @today
+      else
+        false
 
     @isWorkDay = @isWeekday and not @isVacationDay
 
     @workDaysTotal = moment(@eom._d).add(1, 'day').weekDays( @bom )
-    @workDaysWorked = @today.weekDays( @bom ) - @vacationDaysSpent
-    @workDaysLeft = @workDaysTotal - @workDaysWorked - @vacationDaysRemaining
+    weekDaysBeforeToday = @today.weekDays( @bom )
+    @workDaysWorked = weekDaysBeforeToday - @vacationDaysSpent
+    @workDaysLeft = @workDaysTotal - weekDaysBeforeToday - @vacationDaysRemaining - (if @isVacationDay then 1 else 0)
     @workDaysLeftTomorrow = if @isWorkDay then @workDaysLeft - 1 else @workDaysLeft
 
     # ----------------------------------------------------

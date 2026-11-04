@@ -80,6 +80,7 @@
       })(this));
     },
     setCalculatedVariables: function() {
+      var weekDaysBeforeToday;
       this.isVacationDay = _.some(_.filter(this.savedVacations, (function(_this) {
         return function(vacation) {
           if (_this.holidaysByName[vacation]) {
@@ -94,15 +95,24 @@
           if (_this.holidaysByName[vacation]) {
             return _this.holidaysByName[vacation].date > _this.today;
           } else {
-            return true;
+            return /\d/.test(vacation);
           }
         };
       })(this)));
-      this.vacationDaysSpent = _.size(this.savedVacations) - this.vacationDaysRemaining;
+      this.vacationDaysSpent = _.size(_.filter(this.savedVacations, (function(_this) {
+        return function(vacation) {
+          if (_this.holidaysByName[vacation]) {
+            return _this.holidaysByName[vacation].date < _this.today;
+          } else {
+            return false;
+          }
+        };
+      })(this)));
       this.isWorkDay = this.isWeekday && !this.isVacationDay;
       this.workDaysTotal = moment(this.eom._d).add(1, 'day').weekDays(this.bom);
-      this.workDaysWorked = this.today.weekDays(this.bom) - this.vacationDaysSpent;
-      this.workDaysLeft = this.workDaysTotal - this.workDaysWorked - this.vacationDaysRemaining;
+      weekDaysBeforeToday = this.today.weekDays(this.bom);
+      this.workDaysWorked = weekDaysBeforeToday - this.vacationDaysSpent;
+      this.workDaysLeft = this.workDaysTotal - weekDaysBeforeToday - this.vacationDaysRemaining - (this.isVacationDay ? 1 : 0);
       this.workDaysLeftTomorrow = this.isWorkDay ? this.workDaysLeft - 1 : this.workDaysLeft;
       this.nmIsVacationDay = _.some(_.filter(this.savedVacations, (function(_this) {
         return function(vacation) {

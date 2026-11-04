@@ -126,21 +126,21 @@ test('+ Vacation Day adds a day off and - Vacation Day takes it back', () => {
 });
 
 // Wed Nov 11 is Veteran's Day. 56h logged over the 7 weekdays before it.
-test('a vacation day already taken is not counted as a day left', { todo: 'past vacation days are added back to days left' }, () => {
+test('a vacation day already taken is not counted as a day left', () => {
   const page = open({ now: at(2026, 11, 12), storage: { ...SETTINGS, vacations: "Veteran's Day" }, toggl: { totalHours: 56, todayHours: 0 } });
   assert.equal(shown(page, 'current-avg'), '8'); // 56 / 7
   assert.equal(shown(page, 'target-avg-today'), '8'); // 104 / 13
   assert.equal(shown(page, 'target-avg'), '8.7'); // 104 / 12
 });
 
-test('on a vacation day, today is neither a day worked nor a day left', { todo: 'today\'s vacation is subtracted from days already worked' }, () => {
+test('on a vacation day, today is neither a day worked nor a day left', () => {
   const page = open({ now: at(2026, 11, 11), storage: { ...SETTINGS, vacations: "Veteran's Day" }, toggl: { totalHours: 56, todayHours: 0 } });
   assert.equal(shown(page, 'current-avg'), '8'); // 56 / 7
   assert.equal(shown(page, 'target-avg-today'), '8'); // 104 / 13
   assert.equal(shown(page, 'target-avg'), '8'); // 104 / 13
 });
 
-test('a holiday checked last month is not a vacation day this month', { todo: 'stale holiday names count as manual vacation days' }, () => {
+test('a holiday checked last month is not a vacation day this month', () => {
   const page = open({ now: at(2026, 12, 3), storage: { ...SETTINGS, vacations: 'Thanksgiving Day' }, toggl: { totalHours: 16, todayHours: 0 } });
   assert.equal(shown(page, 'vacation-days'), '0');
   assert.equal(shown(page, 'target-avg-today'), '6.9'); // 144 / 21
