@@ -85,7 +85,7 @@
         var checkFunctions = function() {
             for (var i = _holidays.F.length - 1; i >= 0; i--) {
                 var obj = _holidays.F[i];
-                for (prop in obj) {
+                for (var prop in obj) {
                     var func = obj[prop];
                     if(typeof func === 'function') {
                         if(func(that._d)) {

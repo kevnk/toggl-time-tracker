@@ -1,0 +1,15 @@
+{
+  "name": "toggl-time-tracker",
+  "private": true,
+  "description": "Dev tooling only. The site itself is static files served by GitHub Pages.",
+  "scripts": {
+    "build": "coffee --compile assets/scripts/",
+    "lint": "coffeelint assets/scripts/",
+    "test": "node --test test/*.test.js"
+  },
+  "devDependencies": {
+    "coffee-script": "1.7.1",
+    "coffeelint": "1.16.2",
+    "jsdom": "30.1.3"
+  }
+}

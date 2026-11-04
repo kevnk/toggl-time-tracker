@@ -56,23 +56,21 @@
       this.isTheFirst = this.today.date() === this.bom.date();
       this.isTheLast = this.today.date() === this.eom.date();
       this.isWeekday = this.today.isWeekDay();
-      this.isHoliday = this.today.holiday();
       this.nmIsWeekday = this.tomorrow.isWeekDay();
-      this.nmIsHoliday = this.tomorrow.holiday();
       this.savedVacations = localStorage.getItem('vacations') ? localStorage.getItem('vacations').split(',') : [];
       this.holidays = [];
       this.holidaysByName = {};
       return moment().range(this.bom._d, this.eom._d).by('days', (function(_this) {
-        return function(moment) {
+        return function(day) {
           var holiday, holidayObj;
-          if (!moment.isWeekDay()) {
+          if (!day.isWeekDay()) {
             return;
           }
-          holiday = moment.holiday();
+          holiday = day.holiday();
           if (!_.isUndefined(holiday)) {
             holidayObj = {
               name: holiday,
-              date: moment,
+              date: day,
               checked: _.contains(_this.savedVacations, holiday)
             };
             _this.holidays.push(holidayObj);
@@ -122,13 +120,12 @@
       return this.nmWorkDaysLeftTomorrow = this.nmIsWorkDay ? this.nmWorkDaysLeft - 1 : this.nmWorkDaysLeft;
     },
     getData: function() {
-      var qSince, qToday, qUntil, that;
+      var qSince, qToday, qUntil;
       qSince = this.bom.format('YYYY-MM-DD');
       qUntil = this.eom.format('YYYY-MM-DD');
       qToday = this.today.format('YYYY-MM-DD');
       this.detailsUrl = 'https://toggl.com/reports/api/v2/details?rounding=Off&status=active&user_ids=' + this.userId + '&name=&billable=both&calculate=time&sortDirection=asc&sortBy=date&page=1&description=&since=' + qSince + '&until=' + qUntil + '&workspace_id=' + this.workspaceId + '&period=thisMonth&with_total_currencies=1&grouping=&subgrouping=time_entries&order_field=date&order_desc=off&distinct_rates=Off&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token=';
       this.summaryUrl = 'https://toggl.com/reports/api/v2/summary.json?grouping=projects&subgrouping=time_entries&order_field=title&order_desc=off&rounding=Off&distinct_rates=Off&status=active&user_ids=' + this.userId + '&name=&billable=both&workspace_id=' + this.workspaceId + '&calculate=time&sortDirection=asc&sortBy=title&page=1&description=&since=' + qToday + '&until=' + qToday + '&period=today&with_total_currencies=1&user_agent=Toggl+New+3.28.13&bars_count=31&subgrouping_ids=true&bookmark_token=';
-      that = this;
       $('.loading').fadeIn('fast');
       $('.row.fade.in').removeClass('in');
       return $.when($.ajax({
@@ -169,11 +166,9 @@
           _this.totalHours = Math.round(_this.details.total_grand / 1000 / 60 / 60 * 10) / 10;
           return _this.displayData();
         };
-      })(this)).fail((function(_this) {
-        return function() {
-          return $('.loading').removeClass('loading').addClass('error').html('<h1><span class="label label-danger">Error! Wrong credentials!</span></h1> <a class="btn btn-default" href="reset/">Try reseting your variables</a>');
-        };
-      })(this));
+      })(this)).fail(function() {
+        return $('.loading').removeClass('loading').addClass('error').html('<h1><span class="label label-danger">Error! Wrong credentials!</span></h1> <a class="btn btn-default" href="reset/">Try reseting your variables</a>');
+      });
     },
     displayData: function() {
       var $clockOut, $current, $target, $targetAvgToday, $targetHrs, $targetToday, $total, $vacation, currentAvg, eod, targetAvg, targetAvgToday, targetToday;
@@ -214,10 +209,8 @@
       });
     },
     displaySettings: function() {
-      var $apiKey, $earnings, $form, $inputs, $saveBtn, $userId, $wage, $workspaceId;
+      var $apiKey, $earnings, $form, $userId, $wage, $workspaceId;
       $form = $('.menu form');
-      $inputs = $form.find('input');
-      $saveBtn = $form.find('button');
       $earnings = $('#earnings').val(this.targetEarnings);
       $wage = $('#wage').val(this.wage);
       $userId = $('#userId').val(this.userId);
