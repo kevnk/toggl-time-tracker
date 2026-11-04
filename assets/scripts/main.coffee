@@ -56,7 +56,6 @@ Site =
     @nmEom = moment(@tomorrow._d).date( @tomorrow.daysInMonth() )
 
     # Exception days
-    @isTheFirst = @today.date() is @bom.date()
     @isTheLast = @today.date() is @eom.date()
     @isWeekday = @today.isWeekDay()
 
@@ -186,10 +185,7 @@ Site =
     $target.html targetAvg
 
     # TARGET AVG TODAY
-    unless @isTheFirst
-      targetAvgToday = Math.round((@targetHrs - @totalHours + @todaysHours) / Math.max(@workDaysLeft, 1) * 10) / 10
-    else
-      targetAvgToday = Math.round((@targetHrs - @todaysHours) / Math.max(@workDaysLeft, 1) * 10) / 10
+    targetAvgToday = Math.round((@targetHrs - @totalHours + @todaysHours) / Math.max(@workDaysLeft, 1) * 10) / 10
     $targetAvgToday.html targetAvgToday
 
     # TARGET TODAY

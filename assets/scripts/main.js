@@ -53,7 +53,6 @@
       this.tomorrow = moment(this.today._d).add(1, 'day');
       this.nmBom = moment(this.tomorrow._d).date(1);
       this.nmEom = moment(this.tomorrow._d).date(this.tomorrow.daysInMonth());
-      this.isTheFirst = this.today.date() === this.bom.date();
       this.isTheLast = this.today.date() === this.eom.date();
       this.isWeekday = this.today.isWeekDay();
       this.savedVacations = localStorage.getItem('vacations') ? localStorage.getItem('vacations').split(',') : [];
@@ -187,11 +186,7 @@
         targetAvg = Math.round(this.targetHrs / this.nmWorkDaysTotal * 10) / 10;
       }
       $target.html(targetAvg);
-      if (!this.isTheFirst) {
-        targetAvgToday = Math.round((this.targetHrs - this.totalHours + this.todaysHours) / Math.max(this.workDaysLeft, 1) * 10) / 10;
-      } else {
-        targetAvgToday = Math.round((this.targetHrs - this.todaysHours) / Math.max(this.workDaysLeft, 1) * 10) / 10;
-      }
+      targetAvgToday = Math.round((this.targetHrs - this.totalHours + this.todaysHours) / Math.max(this.workDaysLeft, 1) * 10) / 10;
       $targetAvgToday.html(targetAvgToday);
       targetToday = Math.round((targetAvgToday - this.todaysHours) * 10) / 10;
       $targetToday.html(targetToday);

@@ -179,7 +179,7 @@ test('on the first of the month, Current AVG is today\'s hours', () => {
   assert.equal(shown(page, 'target-avg'), '7.1'); // 157 / 22
 });
 
-test('on the first of the month, today\'s target counts today\'s hours once', { todo: 'first-of-month branch subtracts today\'s hours twice' }, () => {
+test('on the first of the month, today\'s target counts today\'s hours once', () => {
   const page = open({ now: at(2026, 12, 1), toggl: { totalHours: 3, todayHours: 3 } });
   assert.equal(shown(page, 'target-avg-today'), '7'); // 160 / 23
   assert.equal(shown(page, 'target-today'), '4');
