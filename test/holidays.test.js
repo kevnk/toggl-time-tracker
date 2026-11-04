@@ -18,6 +18,7 @@ test('names the holidays of 2026', () => {
     '2026-10-12': 'Columbus Day',
     '2026-11-11': "Veteran's Day",
     '2026-11-26': 'Thanksgiving Day',
+    '2026-11-27': 'Day after Thanksgiving',
     '2026-12-24': 'Christmas Eve',
     '2026-12-25': 'Christmas Day',
     '2026-12-31': "New Year's Eve",
@@ -36,12 +37,12 @@ test('Easter and Good Friday move with the year', () => {
   assert.equal(holiday('2027-03-26'), 'Good Friday');
 });
 
-test('Memorial Day is the last Monday in May, even when May has five Mondays', { todo: 'May 24, 2027 is also labeled Memorial Day' }, () => {
+test('Memorial Day is the last Monday in May, even when May has five Mondays', () => {
   assert.equal(holiday('2027-05-31'), 'Memorial Day');
   assert.equal(holiday('2027-05-24'), undefined);
 });
 
-test('Thanksgiving and the day after follow the fourth Thursday', { todo: 'Nov 28/29 are hardcoded from 2013' }, () => {
+test('Thanksgiving and the day after follow the fourth Thursday', () => {
   assert.equal(holiday('2026-11-27'), 'Day after Thanksgiving');
   assert.equal(holiday('2026-11-28'), undefined);
   assert.equal(holiday('2026-11-29'), undefined);

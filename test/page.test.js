@@ -91,7 +91,11 @@ test('reset/ clears the saved settings', () => {
 test('lists this month\'s weekday holidays as vacation checkboxes', () => {
   const page = open(NOV_3);
   const labels = Array.from(page.$('#holidays form label'), (el) => el.textContent.trim().replace(/\s+/g, ' '));
-  assert.deepEqual(labels, ["Veteran's Day Wed, Nov 11th", 'Thanksgiving Day Thu, Nov 26th']);
+  assert.deepEqual(labels, [
+    "Veteran's Day Wed, Nov 11th",
+    'Thanksgiving Day Thu, Nov 26th',
+    'Day after Thanksgiving Fri, Nov 27th',
+  ]);
 });
 
 test('checking an upcoming holiday spreads the target over one fewer day', () => {
